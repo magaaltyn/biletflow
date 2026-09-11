@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Event Admin is organizer-authorized (mobile check-in app), separate from Platform Admin.
+enum UserRole {
+  ATTENDEE
+  ORGANIZER
+  EVENT_ADMIN
+  PLATFORM_ADMIN
+}
+
+enum EventVisibility {
+  PUBLIC
+  UNLISTED
+  PRIVATE
+}
+
+// Dashboard groupings like "Upcoming"/"Active"/"Completed" are derived from
+// status + startsAt/endsAt, not stored separately.
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+}
+
+enum SeatingType {
+  GENERAL_ADMISSION
+  ASSIGNED_SEATING
+}
+
+model User {
+  id              String    @id @default(uuid())
+  email           String    @unique
+  passwordHash    String
+  firstName       String?
+  lastName        String?
+  phone           String?
+  role            UserRole  @default(ATTENDEE)
+  emailVerifiedAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  organizedEvents Event[] @relation("EventOrganizer")
+
+  @@map("users")
+}
+
+// Venue/section/row/seat details for assigned seating live in their own
+// models once that's built; seatingType is just a flag for now.
+model Event {
+  id                    String          @id @default(uuid())
+  organizerId           String
+  organizer             User            @relation("EventOrganizer", fields: [organizerId], references: [id], onDelete: Restrict)
+  title                 String
+  description           String?
+  category              String?
+  images                String[]        @default([])
+  venueName             String?
+  venueAddress          String?
+  timezone              String          @default("Asia/Almaty")
+  startsAt              DateTime
+  endsAt                DateTime
+  registrationOpensAt   DateTime?
+  registrationClosesAt  DateTime?
+  capacity              Int?
+  visibility            EventVisibility @default(PUBLIC)
+  status                EventStatus     @default(DRAFT)
+  seatingType           SeatingType     @default(GENERAL_ADMISSION)
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  @@index([organizerId])
+  @@index([status])
+  @@map("events")
+}
