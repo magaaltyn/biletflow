@@ -1,0 +1,71 @@
+// Users and Authentication
+Table Users {
+  id uuid [pk, default: `gen_random_uuid()`]
+  email varchar [unique, not null]
+  password_hash varchar [not null]
+  role varchar [not null, note: 'ATTENDEE, ORGANIZER, EVENT_ADMIN, PLATFORM_ADMIN']
+  created_at timestamp [default: `now()`]
+}
+
+// Core Event Data
+Table Events {
+  id uuid [pk, default: `gen_random_uuid()`]
+  organizer_id uuid [ref: > Users.id, not null]
+  title varchar [not null]
+  description text
+  status varchar [not null, note: 'DRAFT, PUBLISHED, CANCELLED']
+  is_assigned_seating boolean [default: false]
+  start_time timestamp [not null]
+  end_time timestamp [not null]
+  created_at timestamp [default: `now()`]
+}
+
+// Ticket Inventory Configuration
+Table TicketTypes {
+  id uuid [pk, default: `gen_random_uuid()`]
+  event_id uuid [ref: > Events.id, not null]
+  name varchar [not null]
+  price_kzt decimal [not null, note: '0 for free tickets']
+  total_capacity int [not null]
+  sales_start timestamp
+  sales_end timestamp
+}
+
+// Seating Blueprint (For Predefined Layout)
+Table Seats {
+  id uuid [pk, default: `gen_random_uuid()`]
+  event_id uuid [ref: > Events.id, not null]
+  section_name varchar
+  row_identifier varchar
+  seat_number varchar
+  is_accessible boolean [default: false]
+}
+
+// The Concurrency Locking Mechanism
+Table SeatHolds {
+  id uuid [pk, default: `gen_random_uuid()`]
+  seat_id uuid [ref: > Seats.id, not null]
+  user_id uuid [ref: > Users.id, null]
+  expires_at timestamp [not null, note: 'Releases seat if checkout abandoned']
+  status varchar [not null, note: 'HELD, PURCHASED, RELEASED']
+}
+
+// Financial Transactions
+Table Orders {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [ref: > Users.id, not null]
+  event_id uuid [ref: > Events.id, not null]
+  total_kzt decimal [not null]
+  status varchar [not null, note: 'PENDING, COMPLETED, CANCELLED, REFUNDED']
+  created_at timestamp [default: `now()`]
+}
+
+// Issued Admission Records
+Table Tickets {
+  id uuid [pk, default: `gen_random_uuid()`]
+  order_id uuid [ref: > Orders.id, not null]
+  ticket_type_id uuid [ref: > TicketTypes.id, not null]
+  seat_id uuid [ref: > Seats.id, null]
+  qr_token varchar [unique, not null, note: 'Opaque token for mobile verification']
+  status varchar [not null, note: 'VALID, CHECKED_IN, CANCELLED']
+}
