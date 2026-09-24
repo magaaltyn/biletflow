@@ -7,6 +7,8 @@ import { authRouter } from "./modules/auth/auth.routes";
 import { eventsRouter } from "./modules/events/events.routes";
 import { ordersRouter } from "./modules/orders/orders.routes";
 import { ticketsRouter } from "./modules/tickets/tickets.routes";
+import authRoutes from "./modules/auth/auth.routes";
+app.use("/api/auth", authRoutes);
 
 export const app = express();
 
