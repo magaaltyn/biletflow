@@ -1,19 +1,12 @@
 import { Router } from "express";
+import { register, login, refresh, me } from "../controllers/auth.controller";
+import { authenticate } from "../middleware/authenticate.middleware";
 
-export const authRouter = Router();
+const router = Router();
 
-authRouter.post("/register", (_req, res) => {
-  res.status(501).json({ error: "Not implemented yet" });
-});
+router.post("/register", register);
+router.post("/login", login);
+router.post("/refresh", refresh);
+router.get("/me", authenticate, me);
 
-authRouter.post("/login", (_req, res) => {
-  res.status(501).json({ error: "Not implemented yet" });
-});
-
-authRouter.post("/logout", (_req, res) => {
-  res.status(501).json({ error: "Not implemented yet" });
-});
-
-authRouter.post("/reset-password", (_req, res) => {
-  res.status(501).json({ error: "Not implemented yet" });
-});
+export default router;
