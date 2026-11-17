@@ -1,2 +1,2 @@
 /** @type {import('tailwindcss').Config} */
-export default { content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'], theme: { extend: { colors: { brand: '#124cf5', ink: '#10172b', muted: '#667085', canvas: '#f7f9fd' }, boxShadow: { soft: '0 8px 30px rgba(25, 46, 92, .06)' } } }, plugins: [] }
+export default { content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'], theme: { extend: { colors: { brand: '#7138c8', ink: '#241b45', muted: '#746b86', canvas: '#ffffff' }, boxShadow: { soft: '0 12px 34px rgba(63, 35, 112, .10)' } } }, plugins: [] }
