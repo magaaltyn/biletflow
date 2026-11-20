@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" font-family="Inter,Arial,sans-serif">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0f172a"/><stop offset="1" stop-color="#1e293b"/></linearGradient>
+  <radialGradient id="l" cx=".5" cy="0" r=".9"><stop offset="0" stop-color="#fde68a" stop-opacity=".9"/><stop offset="1" stop-color="#fde68a" stop-opacity="0"/></radialGradient></defs>
+  <rect width="1000" height="600" fill="url(#g)"/>
+  <polygon points="230,120 530,120 590,260 170,260" fill="#475569"/>
+  <ellipse cx="380" cy="120" rx="300" ry="160" fill="url(#l)"/>
+  <circle cx="250" cy="190" r="10" fill="#e2e8f0"/><circle cx="315" cy="190" r="10" fill="#e2e8f0"/><circle cx="380" cy="190" r="10" fill="#e2e8f0"/><circle cx="445" cy="190" r="10" fill="#e2e8f0"/><circle cx="510" cy="190" r="10" fill="#e2e8f0"/>
+  <path d="M0 417 Q500 400 1000 423" stroke="#334155" stroke-width="14" fill="none" opacity="0.5"/><path d="M0 444 Q500 430 1000 456" stroke="#334155" stroke-width="14" fill="none" opacity="0.5700000000000001"/><path d="M0 471 Q500 460 1000 489" stroke="#334155" stroke-width="14" fill="none" opacity="0.64"/><path d="M0 498 Q500 490 1000 522" stroke="#334155" stroke-width="14" fill="none" opacity="0.71"/><path d="M0 525 Q500 520 1000 555" stroke="#334155" stroke-width="14" fill="none" opacity="0.78"/><path d="M0 552 Q500 550 1000 588" stroke="#334155" stroke-width="14" fill="none" opacity="0.8500000000000001"/><path d="M0 579 Q500 580 1000 621" stroke="#334155" stroke-width="14" fill="none" opacity="0.92"/>
+  <rect x="0" y="555" width="1000" height="45" fill="#000" opacity=".55"/>
+  <text x="24" y="584" font-size="20" font-weight="700" fill="#fff">View from Section C — front right</text>
+  <text x="976" y="584" text-anchor="end" font-size="14" fill="#cbd5e1">Illustration · approximate view</text>
+</svg>
