@@ -81,6 +81,9 @@ const dict = {
   downloadPdf: { ru: "Скачать PDF", kk: "PDF жүктеу", en: "Download PDF" },
   showAtEntrance: { ru: "Покажите QR-код на входе. Каждый билет сканируется только один раз.", kk: "Кіреберісте QR-кодты көрсетіңіз. Әр билет бір рет қана сканерленеді.", en: "Show this QR code at the entrance. Each ticket can be scanned only once." },
   getHelp: { ru: "Нужна помощь?", kk: "Көмек керек пе?", en: "Need help?" },
+  themeLight: { ru: "Светлая тема", kk: "Жарық тақырып", en: "Light theme" },
+  themeDark: { ru: "Тёмная тема", kk: "Қараңғы тақырып", en: "Night theme" },
+  themeSystem: { ru: "Как в системе", kk: "Жүйедегідей", en: "Match system" },
   freeLimit: { ru: "Один бесплатный билет на аккаунт для каждого события", kk: "Әр іс-шараға бір аккаунтқа бір тегін билет", en: "One free ticket per account for each event" },
 } as const;
 

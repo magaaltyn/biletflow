@@ -6,10 +6,10 @@ const cx = (...c: (string | false | null | undefined)[]) => c.filter(Boolean).jo
 
 type Variant = "primary" | "secondary" | "ghost" | "danger";
 const variants: Record<Variant, string> = {
-  primary: "bg-brand text-white hover:bg-brand-dark disabled:bg-slate-300",
+  primary: "bg-brand text-on-brand hover:bg-brand-dark disabled:bg-slate-300",
   secondary: "border border-line bg-white text-ink hover:bg-slate-50 disabled:text-slate-400",
   ghost: "text-brand hover:bg-brand-soft",
-  danger: "bg-red-600 text-white hover:bg-red-700 disabled:bg-slate-300",
+  danger: "bg-red-600 text-on-brand hover:bg-red-700 disabled:bg-slate-300",
 };
 
 export function Button({ variant = "primary", className, loading, children, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant; loading?: boolean }) {
@@ -57,7 +57,7 @@ const tones = {
   blue: "bg-blue-50 text-blue-700",
   green: "bg-green-50 text-green-700",
   amber: "bg-amber-50 text-amber-800",
-  red: "bg-red-50 text-red-700",
+  red: "bg-red-50 text-red-800",
   purple: "bg-violet-50 text-violet-700",
 };
 export function Badge({ tone = "gray", children }: { tone?: keyof typeof tones; children: ReactNode }) {

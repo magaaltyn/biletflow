@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { api, formatDate } from "@/lib/api";
 import { LANGS, useT } from "@/lib/i18n";
 import { useSession } from "@/lib/session";
+import { ThemeToggle } from "./ThemeToggle";
 import { cx } from "./ui";
 
 export function Logo() {
@@ -117,12 +118,13 @@ export function Header() {
               </option>
             ))}
           </select>
+          <ThemeToggle />
           {user ? (
             <>
               <Bell />
               <div className="relative" ref={ref}>
                 <button onClick={() => setMenu(!menu)} className="flex items-center gap-2 rounded-full border border-line py-1 pl-1 pr-3 text-sm font-semibold hover:bg-slate-50" aria-expanded={menu}>
-                  <span className="flex size-7 items-center justify-center rounded-full bg-brand text-xs text-white">{user.full_name.slice(0, 1).toUpperCase()}</span>
+                  <span className="flex size-7 items-center justify-center rounded-full bg-brand text-xs text-on-brand">{user.full_name.slice(0, 1).toUpperCase()}</span>
                   <span className="hidden max-w-32 truncate sm:inline">{user.full_name.split(" ")[0]}</span>
                 </button>
                 {menu && (
@@ -145,7 +147,7 @@ export function Header() {
               <Link href="/login" className="hidden rounded-lg px-3 py-2 text-sm font-semibold hover:bg-slate-100 sm:inline-block">
                 {t("login")}
               </Link>
-              <Link href="/register" className="rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand-dark">
+              <Link href="/register" className="rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-on-brand hover:bg-brand-dark">
                 {t("signup")}
               </Link>
             </>

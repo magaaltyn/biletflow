@@ -25,6 +25,8 @@ export interface SeatMapData {
 }
 
 const COLORS = { available: "#16a34a", premium: "#0d9488", selected: "#1d4ed8", held: "#f59e0b", sold: "#94a3b8", unavailable: "#e2e8f0" };
+// Theme-aware colours for the map background, stage, labels and empty seats.
+const THEME = { surface: "var(--color-white)", subtle: "var(--color-slate-100)", outline: "var(--color-slate-300)", stage: "var(--color-slate-300)", label: "var(--color-slate-700)", empty: "var(--color-slate-200)" };
 
 function SeatShape({ seat, selected, onToggle, label }: { seat: Seat; selected: boolean; onToggle: () => void; label: string }) {
   const x = seat.x + 6;
@@ -67,7 +69,7 @@ function SeatShape({ seat, selected, onToggle, label }: { seat: Seat; selected: 
     return (
       <g {...common}>
         <title>{label}</title>
-        <circle cx={x} cy={y} r={6} fill="#fff" stroke={COLORS.unavailable} strokeWidth={1.5} />
+        <circle cx={x} cy={y} r={6} style={{ fill: THEME.surface, stroke: THEME.empty }} strokeWidth={1.5} />
       </g>
     );
   return (
@@ -115,7 +117,7 @@ export function SeatMap({ data, selected, onChange, maxSeats = 6 }: { data: Seat
     [t("selected"), <circle key="s" cx="8" cy="8" r="6" fill={COLORS.selected} />],
     [t("held"), <rect key="h" x="2" y="2" width="12" height="12" rx="2" fill={COLORS.held} />],
     [t("sold"), <g key="so"><circle cx="8" cy="8" r="6" fill={COLORS.sold} /><path d="M5 5l6 6M11 5l-6 6" stroke="#fff" strokeWidth="1.5" /></g>],
-    [t("unavailable"), <circle key="u" cx="8" cy="8" r="5.5" fill="#fff" stroke={COLORS.unavailable} strokeWidth="1.5" />],
+    [t("unavailable"), <circle key="u" cx="8" cy="8" r="5.5" style={{ fill: THEME.surface, stroke: THEME.empty }} strokeWidth="1.5" />],
     [t("accessible"), <rect key="ac" x="3" y="3" width="10" height="10" transform="rotate(45 8 8)" fill={COLORS.available} />],
   ];
 
@@ -150,14 +152,14 @@ export function SeatMap({ data, selected, onChange, maxSeats = 6 }: { data: Seat
       {mode === "map" ? (
         <div className="overflow-auto rounded-xl border border-line bg-slate-50" style={{ maxHeight: 560 }}>
           <svg viewBox={`0 0 ${data.width} ${data.height}`} style={{ width: `${zoom * 100}%`, minWidth: 600 }} role="group" aria-label="Seat map">
-            <rect x={data.width / 2 - 200} y={40} width={400} height={70} rx={10} fill="#cbd5e1" />
-            <text x={data.width / 2} y={83} textAnchor="middle" fontSize={22} fontWeight={700} fill="#334155">STAGE · СЦЕНА</text>
+            <rect x={data.width / 2 - 200} y={40} width={400} height={70} rx={10} style={{ fill: THEME.stage }} />
+            <text x={data.width / 2} y={83} textAnchor="middle" fontSize={22} fontWeight={700} style={{ fill: THEME.label }}>STAGE · СЦЕНА</text>
             {sections.map(([code, b]) => {
               const price = data.priceBySection[code];
               return (
                 <g key={code}>
-                  <rect x={b.minX - 6} y={b.minY - 30} width={b.maxX - b.minX + 24} height={b.maxY - b.minY + 42} rx={10} fill={price ? "#fff" : "#f1f5f9"} stroke="#cbd5e1" />
-                  <text x={(b.minX + b.maxX) / 2 + 6} y={b.minY - 12} textAnchor="middle" fontSize={13} fontWeight={700} fill="#334155">
+                  <rect x={b.minX - 6} y={b.minY - 30} width={b.maxX - b.minX + 24} height={b.maxY - b.minY + 42} rx={10} style={{ fill: price ? THEME.surface : THEME.subtle, stroke: THEME.outline }} />
+                  <text x={(b.minX + b.maxX) / 2 + 6} y={b.minY - 12} textAnchor="middle" fontSize={13} fontWeight={700} style={{ fill: THEME.label }}>
                     {code}
                     {price ? ` · ${kzt(price.price)}` : ""}
                   </text>

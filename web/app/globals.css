@@ -4,15 +4,74 @@
   --color-brand: #1d4ed8;
   --color-brand-dark: #1e3a8a;
   --color-brand-soft: #eff6ff;
+  --color-on-brand: #ffffff; /* text on brand/coloured buttons: stays white in both themes */
   --color-ink: #0f172a;
   --color-muted: #64748b;
   --color-line: #e2e8f0;
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
+/*
+ * Night theme. Tailwind v4 utilities read colours from CSS variables, so the dark theme only
+ * redefines the palette: "white" becomes the card surface, the slate scale is inverted,
+ * and pale tints (…-50/100/200) become deep tints while text shades (…-700/800/900) become light.
+ * Screen only, so printed tickets and pages stay black on white.
+ */
+@media screen {
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --color-brand: #3b82f6;
+    --color-brand-dark: #2563eb;
+    --color-brand-soft: #172554;
+    --color-ink: #e2e8f0;
+    --color-muted: #94a3b8;
+    --color-line: #273449;
+
+    --color-white: #0f172a;
+    --color-black: #000000;
+    --color-slate-50: #020617;
+    --color-slate-100: #1e293b;
+    --color-slate-200: #334155;
+    --color-slate-300: #475569;
+    --color-slate-400: #64748b;
+    --color-slate-500: #94a3b8;
+    --color-slate-600: #cbd5e1;
+    --color-slate-700: #e2e8f0;
+    --color-slate-800: #f1f5f9;
+    --color-slate-900: #f8fafc;
+
+    --color-blue-50: #172554;
+    --color-blue-100: #1e3a8a;
+    --color-blue-200: #1e40af;
+    --color-blue-700: #93c5fd;
+    --color-blue-800: #bfdbfe;
+    --color-blue-900: #dbeafe;
+
+    --color-green-50: #052e16;
+    --color-green-200: #166534;
+    --color-green-700: #86efac;
+    --color-green-800: #bbf7d0;
+    --color-green-900: #dcfce7;
+
+    --color-amber-50: #451a03;
+    --color-amber-200: #92400e;
+    --color-amber-700: #fcd34d;
+    --color-amber-800: #fde68a;
+    --color-amber-900: #fef3c7;
+
+    --color-red-50: #450a0a;
+    --color-red-200: #991b1b;
+    --color-red-600: #ef4444;
+    --color-red-800: #fecaca;
+
+    --color-violet-50: #2e1065;
+    --color-violet-700: #c4b5fd;
+  }
+}
+
 html {
   color: var(--color-ink);
-  background: #f8fafc;
+  background: var(--color-slate-50);
 }
 
 body {

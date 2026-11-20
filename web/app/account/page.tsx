@@ -5,11 +5,13 @@ import { api } from "@/lib/api";
 import { useRequireUser } from "@/lib/hooks";
 import { LANGS, useT } from "@/lib/i18n";
 import { useSession } from "@/lib/session";
+import { useTheme } from "@/components/ThemeToggle";
 
 export default function Account() {
   const { user } = useRequireUser();
   const { refresh } = useSession();
-  const { lang, setLang } = useT();
+  const { lang, setLang, t } = useT();
+  const { mode, setMode } = useTheme();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [pw, setPw] = useState({ currentPassword: "", newPassword: "" });
@@ -51,6 +53,16 @@ export default function Account() {
         <Field label="Full name"><Input value={name} onChange={(e) => setName(e.target.value)} /></Field>
         <Field label="Phone"><Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+7 7xx xxx xx xx" /></Field>
         <Button onClick={() => run(() => api("/auth/me", { method: "PATCH", body: { fullName: name, phone: phone || null } }), "Profile saved.")}>Save</Button>
+      </Card>
+      <Card className="space-y-3">
+        <h2 className="font-bold">Theme</h2>
+        <div className="flex flex-wrap gap-2">
+          {(["light", "dark", "system"] as const).map((m) => (
+            <Button key={m} variant={mode === m ? "primary" : "secondary"} onClick={() => setMode(m)} aria-pressed={mode === m}>
+              {t(m === "light" ? "themeLight" : m === "dark" ? "themeDark" : "themeSystem")}
+            </Button>
+          ))}
+        </div>
       </Card>
       <Card className="space-y-3">
         <h2 className="font-bold">Language</h2>

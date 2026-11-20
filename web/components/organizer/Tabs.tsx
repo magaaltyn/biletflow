@@ -118,7 +118,7 @@ export function ActivationTab({ event, reload }: { event: any; reload: () => voi
         <ol className="mt-4 space-y-3">
           {a.steps.map((s: any, i: number) => (
             <li key={s.key} className="flex items-start gap-3">
-              <span className={`flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${s.done ? "bg-green-600 text-white" : "bg-slate-200"}`}>{s.done ? "✓" : i + 1}</span>
+              <span className={`flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${s.done ? "bg-green-600 text-on-brand" : "bg-slate-200"}`}>{s.done ? "✓" : i + 1}</span>
               <div className="text-sm">
                 <p className={s.done ? "text-muted line-through" : "font-semibold"}>{s.label}</p>
                 {!s.done && s.key === "identity" && <Link className="text-brand" href="/organizer/profile">Open profile →</Link>}
@@ -243,7 +243,7 @@ export function AttendeesTab({ event }: { event: any }) {
       <div className="flex flex-wrap gap-2">
         <Input className="max-w-xs" placeholder="Search name, email or ticket ID" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Search attendees" />
         <a className="inline-flex items-center rounded-lg border border-line bg-white px-3 text-sm font-semibold" href={`/api/organizer/events/${event.id}/attendees?format=csv`}>Export CSV</a>
-        <Link className="inline-flex items-center rounded-lg bg-brand px-3 text-sm font-semibold text-white" href={`/checkin/${event.id}`}>Open check-in</Link>
+        <Link className="inline-flex items-center rounded-lg bg-brand px-3 text-sm font-semibold text-on-brand" href={`/checkin/${event.id}`}>Open check-in</Link>
       </div>
       {loading ? <Spinner /> : (
         <div className="overflow-x-auto rounded-2xl border border-line bg-white">

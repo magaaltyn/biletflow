@@ -47,8 +47,8 @@ export default function SupportCase() {
             const mine = m.author_id === user.id;
             return (
               <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${mine ? "bg-brand text-white" : "border border-line bg-white"}`}>
-                  <p className={`text-xs ${mine ? "text-blue-100" : "text-muted"}`}>{m.author_name}{m.author_role !== "attendee" && !mine ? ` · ${m.author_role.replace("_", " ")}` : ""} · {formatDate(m.created_at)}</p>
+                <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${mine ? "bg-brand text-on-brand" : "border border-line bg-white"}`}>
+                  <p className={`text-xs ${mine ? "text-on-brand/70" : "text-muted"}`}>{m.author_name}{m.author_role !== "attendee" && !mine ? ` · ${m.author_role.replace("_", " ")}` : ""} · {formatDate(m.created_at)}</p>
                   <p className="mt-0.5 whitespace-pre-line text-sm">{m.body}</p>
                 </div>
               </div>

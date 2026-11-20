@@ -126,7 +126,7 @@ function OrderInner() {
           <div className="grid gap-4 sm:grid-cols-2">
             {o.tickets.map((tk: any) => (
               <Card key={tk.id} className="overflow-hidden p-0">
-                <div className="bg-brand p-4 text-white">
+                <div className="bg-brand p-4 text-on-brand">
                   <p className="text-lg font-bold">{o.title}</p>
                   <p className="text-sm opacity-90">{formatDate(o.starts_at, { dateStyle: "medium", timeStyle: "short" })} · {o.venue_name}</p>
                 </div>

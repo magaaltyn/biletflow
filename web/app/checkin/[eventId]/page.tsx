@@ -140,7 +140,7 @@ export default function CheckinScreen() {
         <div><p className="text-xs text-muted">Registered</p><p className="text-3xl font-extrabold">{stats?.registered ?? "—"}</p></div>
       </Card>
       {result && style && (
-        <div className={`rounded-2xl p-5 text-white ${style.bg}`} role="status" aria-live="assertive">
+        <div className={`rounded-2xl p-5 text-on-brand ${style.bg}`} role="status" aria-live="assertive">
           <p className="text-2xl font-extrabold">{style.title}</p>
           {result.message && <p className="mt-1 text-sm opacity-90">{result.message}</p>}
           {result.ticket && (

@@ -15,7 +15,7 @@ export default function HowItWorks() {
       <ol className="mt-8 space-y-4">
         {items.map(([h, p], i) => (
           <li key={h} className="flex gap-4 rounded-2xl border border-line bg-white p-5">
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand font-bold text-white">{i + 1}</span>
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand font-bold text-on-brand">{i + 1}</span>
             <div>
               <p className="font-semibold">{h}</p>
               <p className="mt-1 text-sm text-muted">{p}</p>
