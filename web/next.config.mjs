@@ -1,5 +1,5 @@
 ﻿/** @type {import('next').NextConfig} */
-const apiUrl = process.env.API_URL ?? "http://localhost:4000";
+const apiUrl = (process.env.API_URL ?? "http://localhost:4000").replace(/^﻿/, "").trim().replace(/\/$/, "");
 
 const nextConfig = {
   // The browser only talks to the website; /api/* is forwarded to the Express API.

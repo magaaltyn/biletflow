@@ -1,6 +1,6 @@
 // All settings come from environment variables (see .env.example).
 function required(name: string, fallback?: string): string {
-  const value = process.env[name] ?? fallback;
+  const value = process.env[name]?.replace(/^﻿/, "").trim() || fallback;
   if (value === undefined || value === "") throw new Error(`Missing environment variable ${name}`);
   return value;
 }

@@ -1,10 +1,10 @@
-import path from "node:path";
 import cookieParser from "cookie-parser";
 import express from "express";
 import { pool } from "./db/pool.js";
 import { loadUser } from "./lib/auth.js";
 import { config } from "./lib/config.js";
 import { errorHandler } from "./lib/http.js";
+import { serveUpload } from "./lib/uploads.js";
 import { adminRouter } from "./routes/admin.js";
 import { authRouter } from "./routes/auth.js";
 import { checkinRouter } from "./routes/checkin.js";
@@ -26,7 +26,7 @@ app.get("/api/health", async (_req, res) => {
   res.json({ status: "ok" });
 });
 
-app.use("/api/uploads", express.static(path.resolve(config.uploadDir), { maxAge: "7d" }));
+app.get("/api/uploads/:name", serveUpload);
 app.use("/api/auth", authRouter);
 app.use("/api/events", eventsRouter);
 app.use("/api/venues", venuesRouter);
@@ -44,7 +44,11 @@ app.use("/api", (_req, res) => {
 });
 app.use(errorHandler);
 
-if (process.env.NODE_ENV !== "test") {
+// On Vercel the app runs as a serverless function: Vercel imports the default export and no server is started.
+// Expired reservations are then released during checkout and order views (releaseExpiredReservations).
+export default app;
+
+if (process.env.NODE_ENV !== "test" && !process.env.VERCEL) {
   app.listen(config.port, () => console.log(`BiletFlow API on http://localhost:${config.port}`));
   // Release seats and tickets from checkouts that were abandoned (SRS 4.3.1, 4.6).
   setInterval(() => {

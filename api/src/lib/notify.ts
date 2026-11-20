@@ -44,7 +44,7 @@ export async function notify(
     const user = await one<{ email: string }>("SELECT email FROM users WHERE id = $1", [userId]);
     if (user) {
       const link = n.link ? `\n\n${config.webUrl}${n.link}` : "";
-      void sendEmail(user.email, n.title, `${n.body ?? ""}${link}\n\n— BiletFlow`);
+      await sendEmail(user.email, n.title, `${n.body ?? ""}${link}\n\n— BiletFlow`);
     }
   }
 }

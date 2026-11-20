@@ -10,7 +10,7 @@ import { config } from "../lib/config.js";
 import { qrPng } from "../lib/documents.js";
 import { badRequest, conflict, idParam, notFound, parse, zOptDate } from "../lib/http.js";
 import { notify } from "../lib/notify.js";
-import { imageUpload, publicUrl } from "../lib/uploads.js";
+import { imageUpload } from "../lib/uploads.js";
 import { type EventRow, getManagedEvent, lifecycle } from "../services/access.js";
 import { halykPaymentObject } from "../services/halyk.js";
 import { refundOrCancelPaidOrder, settingNumber, startPayment } from "../services/orders.js";
@@ -64,9 +64,9 @@ organizerRouter.post("/venues/:id/map-image", imageUpload, async (req, res) => {
   const venue = await one("SELECT * FROM venues WHERE id = $1", [idParam(req)]);
   if (!venue) throw notFound("Venue not found");
   if (venue.created_by !== me(req).id && me(req).role !== "platform_admin") throw badRequest("Only the venue's creator can change its map");
-  if (!req.file) throw badRequest("Choose an image");
-  await q("UPDATE venues SET map_image_url = $2 WHERE id = $1", [venue.id, publicUrl(req.file.filename)]);
-  res.json({ map_image_url: publicUrl(req.file.filename) });
+  if (!req.uploadedUrl) throw badRequest("Choose an image");
+  await q("UPDATE venues SET map_image_url = $2 WHERE id = $1", [venue.id, req.uploadedUrl]);
+  res.json({ map_image_url: req.uploadedUrl });
 });
 
 // ---------- Events ----------
@@ -200,9 +200,9 @@ organizerRouter.patch("/events/:id", async (req, res) => {
 
 organizerRouter.post("/events/:id/image", imageUpload, async (req, res) => {
   const e = await getManagedEvent(me(req), idParam(req));
-  if (!req.file) throw badRequest("Choose an image");
-  await q("UPDATE events SET image_url = $2, updated_at = now() WHERE id = $1", [e.id, publicUrl(req.file.filename)]);
-  res.json({ image_url: publicUrl(req.file.filename) });
+  if (!req.uploadedUrl) throw badRequest("Choose an image");
+  await q("UPDATE events SET image_url = $2, updated_at = now() WHERE id = $1", [e.id, req.uploadedUrl]);
+  res.json({ image_url: req.uploadedUrl });
 });
 
 organizerRouter.post("/events/:id/publish", async (req, res) => {

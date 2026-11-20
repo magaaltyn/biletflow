@@ -1,14 +1,13 @@
 // Printable PDF tickets (SRS 4.7), QR images and calendar files (SRS 4.11).
-import { createRequire } from "node:module";
-import path from "node:path";
+import { fileURLToPath } from "node:url";
 import PDFDocument from "pdfkit";
 import QRCode from "qrcode";
 import { config } from "./config.js";
 
-const require = createRequire(import.meta.url);
-const fontDir = path.join(path.dirname(require.resolve("dejavu-fonts-ttf/package.json")), "ttf");
-const FONT = path.join(fontDir, "DejaVuSans.ttf"); // supports Kazakh and Russian letters
-const FONT_BOLD = path.join(fontDir, "DejaVuSans-Bold.ttf");
+// DejaVu Sans supports Kazakh and Russian letters (license: assets/fonts/LICENSE).
+// Paths are relative to this file in both src/lib and dist/lib.
+const FONT = fileURLToPath(new URL("../../assets/fonts/DejaVuSans.ttf", import.meta.url));
+const FONT_BOLD = fileURLToPath(new URL("../../assets/fonts/DejaVuSans-Bold.ttf", import.meta.url));
 
 export const qrPng = (text: string, width = 600) =>
   QRCode.toBuffer(text, { errorCorrectionLevel: "M", margin: 2, width, color: { dark: "#000000", light: "#ffffff" } });

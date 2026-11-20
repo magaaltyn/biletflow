@@ -55,7 +55,7 @@ authRouter.post("/register", async (req, res) => {
     }
     return u!;
   });
-  void sendVerification(user);
+  await sendVerification(user);
   setSessionCookie(res, user.id);
   res.status(201).json({ user: await publicUser(user.id), token: signSession(user.id) });
 });
@@ -135,7 +135,7 @@ authRouter.post("/forgot-password", async (req, res) => {
   if (user) {
     const token = opaqueToken();
     await q("INSERT INTO password_resets (token_hash, user_id, expires_at) VALUES ($1, $2, now() + interval '1 hour')", [sha256(token), user.id]);
-    void sendEmail(user.email, "Reset your BiletFlow password", `Set a new password:\n\n${config.webUrl}/reset-password?token=${token}\n\nThe link is valid for 1 hour. If you did not ask for this, ignore this email.`);
+    await sendEmail(user.email, "Reset your BiletFlow password", `Set a new password:\n\n${config.webUrl}/reset-password?token=${token}\n\nThe link is valid for 1 hour. If you did not ask for this, ignore this email.`);
   }
   // Same answer whether or not the account exists, so emails cannot be probed.
   res.json({ ok: true });

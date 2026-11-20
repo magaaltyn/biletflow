@@ -13,6 +13,7 @@ COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
 COPY migrations ./migrations
+COPY assets ./assets
 EXPOSE 4000
 # Apply migrations, load demo data once (skipped if data exists), then serve the API.
 CMD ["sh", "-c", "npm run migrate && npm run seed && npm start"]
