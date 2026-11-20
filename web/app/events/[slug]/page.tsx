@@ -176,9 +176,11 @@ function EventPageInner() {
     }
     setBusy(true);
     setErr(null);
+    // Only send a promo code the server has already accepted in the price preview; an invalid one is ignored, not a blocker.
+    const promoOk = Boolean(quote?.promo);
     try {
       const order = await api<{ id: number }>("/orders", {
-        body: { eventId: e.id, items, seatIds, promoCode: campaignToken ? null : appliedPromo, campaignToken, attendeeName: name, attendeeEmail: email },
+        body: { eventId: e.id, items, seatIds, promoCode: promoOk && !campaignToken ? appliedPromo : null, campaignToken: promoOk ? campaignToken : null, attendeeName: name, attendeeEmail: email },
       });
       router.push(`/orders/${order.id}`);
     } catch (x) {
@@ -297,11 +299,38 @@ function EventPageInner() {
             {hasSelection && (
               <>
                 <div className="flex gap-2">
-                  <Input aria-label={t("promoCode")} placeholder={t("promoCode")} value={promo} onChange={(x) => setPromo(x.target.value.toUpperCase())} />
-                  <Button variant="secondary" onClick={() => { setCampaignToken(null); setAppliedPromo(promo.trim() || null); }}>{t("apply")}</Button>
+                  <Input
+                    aria-label={t("promoCode")}
+                    placeholder={t("promoCode")}
+                    value={promo}
+                    onChange={(x) => {
+                      // Editing or clearing the field removes the previously applied code; press Apply for a new one.
+                      setPromo(x.target.value.toUpperCase());
+                      setAppliedPromo(null);
+                      setCampaignToken(null);
+                      setErr(null);
+                    }}
+                    onKeyDown={(x) => {
+                      if (x.key === "Enter") {
+                        x.preventDefault();
+                        setAppliedPromo(promo.trim() || null);
+                      }
+                    }}
+                  />
+                  <Button variant="secondary" onClick={() => { setCampaignToken(null); setAppliedPromo(promo.trim() || null); }} disabled={!promo.trim()}>{t("apply")}</Button>
                 </div>
-                {quote?.promoError && <p className="text-sm text-red-600">{quote.promoError}</p>}
-                {quote?.promo && <p className="text-sm font-semibold text-green-700">✓ {t("promoCode")} {quote.promo.code}</p>}
+                {(appliedPromo || campaignToken) && quote?.promoError && (
+                  <p className="text-sm text-red-600">
+                    {quote.promoError}.{" "}
+                    <button className="font-semibold underline" onClick={() => { setPromo(""); setAppliedPromo(null); setCampaignToken(null); }}>Remove code</button>
+                  </p>
+                )}
+                {quote?.promo && (
+                  <p className="text-sm font-semibold text-green-700">
+                    ✓ {t("promoCode")} {quote.promo.code}{" "}
+                    <button className="font-normal text-muted underline" onClick={() => { setPromo(""); setAppliedPromo(null); setCampaignToken(null); }}>×</button>
+                  </p>
+                )}
                 {quote && (
                   <dl className="space-y-1 border-t border-line pt-3 text-sm">
                     <div className="flex justify-between"><dt>{t("subtotal")}</dt><dd>{kzt(quote.subtotal)}</dd></div>

@@ -60,12 +60,28 @@ export async function halykStatus(invoiceId: string): Promise<"succeeded" | "fai
     client_secret: config.halyk.clientSecret,
     terminal: config.halyk.terminal,
   });
-  const res = await fetch(`${config.halyk.statusUrl}/${encodeURIComponent(invoiceId)}`, { headers: { Authorization: `Bearer ${auth}` } });
-  if (!res.ok) return "pending";
-  const body = (await res.json()) as { resultCode?: string; transaction?: { statusName?: string } };
-  if (body.resultCode !== "100") return body.resultCode === "102" ? "pending" : "failed";
+  let body: { resultCode?: string; resultMessage?: string; transaction?: { statusName?: string; reasonCode?: number } };
+  try {
+    const res = await fetch(`${config.halyk.statusUrl}/${encodeURIComponent(invoiceId)}`, {
+      headers: { Authorization: `Bearer ${auth}` },
+      signal: AbortSignal.timeout(10_000),
+    });
+    body = await res.json();
+    if (!res.ok) {
+      console.log(`halyk status ${invoiceId}: HTTP ${res.status}`, JSON.stringify(body).slice(0, 200));
+      return "pending";
+    }
+  } catch (err) {
+    // Network problem: keep the payment pending; the attendee can check again or the bank's callback will arrive.
+    console.error(`halyk status ${invoiceId}: request failed`, (err as Error).message);
+    return "pending";
+  }
   const status = (body.transaction?.statusName ?? "").toUpperCase();
-  if (["AUTH", "CHARGE", "COMPLETED", "PAID"].includes(status)) return "succeeded";
-  if (["NEW", "PROCESSING", ""].includes(status)) return "pending";
-  return "failed";
+  console.log(`halyk status ${invoiceId}: resultCode=${body.resultCode} statusName=${status}`);
+  // resultCode 100 = found; 101 = rejected; 102 = invoice not found (not paid yet); 107 = try again later.
+  if (body.resultCode === "101") return "failed";
+  if (body.resultCode !== "100") return "pending";
+  if (["AUTH", "CHARGE", "COMPLETE", "COMPLETED", "PAID"].includes(status)) return "succeeded";
+  if (["REJECT", "REJECTED", "FAILED", "CANCEL", "CANCELLED", "DECLINED"].includes(status)) return "failed";
+  return "pending";
 }

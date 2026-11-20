@@ -36,4 +36,8 @@ HALYK_CLIENT_SECRET=<test ClientSecret>
 HALYK_TERMINAL=<test TerminalID>
 ```
 
-The `postLink` callback needs a public HTTPS address, so on `localhost` the result is confirmed when the attendee returns to the order page. The flow has not yet been run against Halyk's live test servers from this project; test it once before relying on it in the demo.
+The `postLink` callback needs a public HTTPS address, so on `localhost` the result is confirmed when the attendee returns to the order page.
+
+**Tested on 21 November 2026** on https://biletflow-kz.vercel.app: a ticket order paid with a Halyk test card returned to BiletFlow and the tickets were issued.
+
+Note: the status-check host in Halyk's docs (`testepay.homebank.kz`) does not respond; the working test host is `https://test-epay-api.epayment.kz/check-status/payment/transaction` (the default in `api/src/lib/config.ts`, override with `HALYK_STATUS_URL`).

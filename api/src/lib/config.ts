@@ -36,7 +36,7 @@ export const config = {
     terminal: process.env.HALYK_TERMINAL ?? "",
     oauthUrl: process.env.HALYK_OAUTH_URL ?? "https://test-epay-oauth.epayment.kz/oauth2/token",
     payformScript: process.env.HALYK_PAYFORM_SCRIPT ?? "https://test-epay.epayment.kz/payform/payment-api.js",
-    statusUrl: process.env.HALYK_STATUS_URL ?? "https://testepay.homebank.kz/api/check-status/payment/transaction",
+    statusUrl: process.env.HALYK_STATUS_URL ?? "https://test-epay-api.epayment.kz/check-status/payment/transaction",
   },
 };
 
