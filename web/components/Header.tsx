@@ -192,7 +192,8 @@ export function Footer() {
         </div>
         <div className="flex flex-col gap-2">
           <Link href="/support">Support</Link>
-          <Link href="/terms">Terms & privacy</Link>
+          <Link href="/terms">Terms</Link>
+          <Link href="/privacy">Privacy policy</Link>
           <p>© {new Date().getFullYear()} BiletFlow</p>
         </div>
       </div>

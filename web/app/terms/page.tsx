@@ -8,6 +8,7 @@ export default function Terms() {
       <h2 className="mt-6 text-xl font-bold text-ink">Organizers</h2>
       <p>Organizers are responsible for the legality and description of their events and for their refund policy. Paid sales require a completed activation checklist and can be suspended by platform admins.</p>
       <h2 className="mt-6 text-xl font-bold text-ink">Your data</h2>
+      <p>Full details: <a className="text-brand underline" href="/privacy">Privacy Policy</a>.</p>
       <p>We store your name, email and orders to issue tickets. Passwords are stored as secure hashes. Card data is never stored by BiletFlow. Printed tickets contain only the event, ticket and attendee name.</p>
       <h2 className="mt-6 text-xl font-bold text-ink">Free tickets</h2>
       <p>Each account can hold one free ticket per event.</p>

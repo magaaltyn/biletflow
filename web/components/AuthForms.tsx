@@ -115,7 +115,7 @@ export function RegisterForm() {
         {f.organizer && <Field label="Organizer / company name"><Input value={f.organizerName} onChange={(e) => setF({ ...f, organizerName: e.target.value })} /></Field>}
         <ErrorBox error={err} />
         <Button type="submit" className="w-full" loading={busy}>{t("signup")}</Button>
-        <p className="text-xs text-muted">By signing up you accept the <Link className="underline" href="/terms">terms and privacy policy</Link>. We will email you a link to confirm your address.</p>
+        <p className="text-xs text-muted">By signing up you accept the <Link className="underline" href="/terms">terms</Link> and <Link className="underline" href="/privacy">privacy policy</Link>. We will email you a link to confirm your address.</p>
       </form>
       <p className="text-sm">Already have an account? <Link href={`/login?next=${encodeURIComponent(next)}`} className="text-brand">{t("login")}</Link></p>
     </Card>
