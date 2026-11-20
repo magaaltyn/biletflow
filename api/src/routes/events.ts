@@ -66,7 +66,7 @@ function canView(e: EventRow, key: unknown, viewer?: { id: number; role: string 
 }
 
 async function eventDetail(e: EventRow) {
-  const venue = await one("SELECT id, name, city, address, timezone, kind, map_image_url, has_seat_map, map_width, map_height FROM venues WHERE id = $1", [e.venue_id]);
+  const venue = await one("SELECT id, name, city, address, timezone, kind, map_image_url, has_seat_map, map_width, map_height, layout FROM venues WHERE id = $1", [e.venue_id]);
   const sections = await q("SELECT code, name, price_category, view_image_url FROM venue_sections WHERE venue_id = $1 ORDER BY code", [e.venue_id]);
   const ticketTypes = await q(
     `SELECT id, name, description, price_kzt, quantity, sold, reserved, greatest(quantity - sold - reserved, 0) AS available,
@@ -101,10 +101,42 @@ eventsRouter.get("/by-slug/:slug", async (req, res) => {
   res.json({ ...detail, campaign, isPreview: e.status === "draft" });
 });
 
-/** Seat availability for assigned-seating events (SRS 4.3.1). */
+/**
+ * Seat availability for assigned-seating events (SRS 4.3.1).
+ *   no query      -> every seat (small venues such as Almaty Arena)
+ *   ?summary=1    -> free-seat counts per section, for large stadium maps
+ *   ?section=112  -> the seats of one section
+ */
 eventsRouter.get("/:id/seats", async (req, res) => {
   const e = await getEvent(idParam(req));
   if (!canView(e, req.query.key, req.user)) throw notFound("Event not found");
+  const types = await q<{ id: number; name: string; price_kzt: number; section_codes: string[] }>(
+    "SELECT id, name, price_kzt, section_codes FROM ticket_types WHERE event_id = $1 AND NOT hidden",
+    [e.id],
+  );
+  const priceBySection: Record<string, { ticketTypeId: number; name: string; price: number }> = {};
+  for (const t of types) for (const code of t.section_codes) priceBySection[code] = { ticketTypeId: t.id, name: t.name, price: t.price_kzt };
+  const venue = await one("SELECT map_width, map_height, layout FROM venues WHERE id = $1", [e.venue_id]);
+
+  if (req.query.summary) {
+    const sections = await q<{ section: string; total: number; taken: number }>(
+      `SELECT vs.code AS section, count(s.id)::int AS total,
+              count(es.seat_id) FILTER (WHERE es.status IN ('sold','blocked') OR (es.status = 'held' AND es.held_until > now()))::int AS taken
+         FROM venue_sections vs JOIN seats s ON s.section_id = vs.id
+         LEFT JOIN event_seats es ON es.seat_id = s.id AND es.event_id = $1
+        WHERE vs.venue_id = $2
+        GROUP BY vs.code ORDER BY vs.code`,
+      [e.id, e.venue_id],
+    );
+    res.json({
+      sections: sections.map((x) => ({ section: x.section, total: x.total, available: priceBySection[x.section] ? x.total - x.taken : 0 })),
+      priceBySection,
+      layout: venue.layout,
+    });
+    return;
+  }
+
+  const section = typeof req.query.section === "string" ? req.query.section : null;
   const seats = await q(
     `SELECT s.id, vs.code AS section, s.row_label AS row, s.seat_number AS number, s.accessible, s.x, s.y,
             CASE WHEN es.status = 'sold' THEN 'sold'
@@ -113,19 +145,12 @@ eventsRouter.get("/:id/seats", async (req, res) => {
                  ELSE 'available' END AS status
        FROM seats s JOIN venue_sections vs ON vs.id = s.section_id
        LEFT JOIN event_seats es ON es.seat_id = s.id AND es.event_id = $1
-      WHERE s.venue_id = $2
-      ORDER BY vs.code, s.row_label, s.seat_number`,
-    [e.id, e.venue_id],
+      WHERE s.venue_id = $2 AND ($3::text IS NULL OR vs.code = $3)
+      ORDER BY vs.code, s.y, s.x`,
+    [e.id, e.venue_id, section],
   );
-  const types = await q<{ id: number; name: string; price_kzt: number; section_codes: string[] }>(
-    "SELECT id, name, price_kzt, section_codes FROM ticket_types WHERE event_id = $1 AND NOT hidden",
-    [e.id],
-  );
-  const priceBySection: Record<string, { ticketTypeId: number; name: string; price: number }> = {};
-  for (const t of types) for (const code of t.section_codes) priceBySection[code] = { ticketTypeId: t.id, name: t.name, price: t.price_kzt };
   // Sections without a ticket type are not on sale.
   const result = seats.map((s) => ({ ...s, status: s.status === "available" && !priceBySection[s.section] ? "unavailable" : s.status }));
-  const venue = await one("SELECT map_width, map_height FROM venues WHERE id = $1", [e.venue_id]);
   res.json({ seats: result, priceBySection, width: venue.map_width, height: venue.map_height });
 });
 

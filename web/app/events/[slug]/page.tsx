@@ -4,6 +4,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { EventImage } from "@/components/EventCard";
 import { SeatMap, type SeatMapData } from "@/components/SeatMap";
+import { StadiumPicker, type StadiumLayout } from "@/components/StadiumPicker";
 import { Badge, Button, Card, ErrorBox, Field, Input, Notice, Spinner } from "@/components/ui";
 import { api, kzt } from "@/lib/api";
 import { useApi } from "@/lib/hooks";
@@ -38,7 +39,7 @@ interface EventDetail {
   refund_policy: string;
   remaining: number;
   isPreview: boolean;
-  venue: { id: number; name: string; city: string; address: string; timezone: string; kind: string; map_image_url: string | null; has_seat_map: boolean };
+  venue: { id: number; name: string; city: string; address: string; timezone: string; kind: string; map_image_url: string | null; has_seat_map: boolean; layout: StadiumLayout | null };
   sections: { code: string; name: string; price_category: string; view_image_url: string | null }[];
   ticketTypes: TicketType[];
   organizer: { id: number; display_name: string };
@@ -118,6 +119,7 @@ function EventPageInner() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<unknown>(null);
   const [copied, setCopied] = useState(false);
+  const [seatRefresh, setSeatRefresh] = useState(0);
 
   useEffect(() => {
     if (e?.campaign?.code) {
@@ -133,11 +135,13 @@ function EventPageInner() {
     }
   }, [user]);
 
+  const isStadium = e?.venue.layout?.type === "stadium";
   const loadSeats = () => e && api<SeatMapData>(`/events/${e.id}/seats?${qs}`).then(setSeatMap).catch(setErr);
   useEffect(() => {
-    if (e?.seating === "assigned") void loadSeats();
+    // Large stadium maps load per sector inside StadiumPicker; small venues load every seat at once.
+    if (e?.seating === "assigned" && !isStadium) void loadSeats();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [e?.id, e?.seating]);
+  }, [e?.id, e?.seating, isStadium]);
 
   const items = useMemo(() => Object.entries(qty).filter(([, q]) => q > 0).map(([id, q]) => ({ ticketTypeId: Number(id), quantity: q })), [qty]);
   const hasSelection = e?.seating === "assigned" ? seatIds.length > 0 : items.length > 0;
@@ -147,19 +151,11 @@ function EventPageInner() {
       setQuote(null);
       return;
     }
-    if (!user) {
-      // Quote needs a session; show a simple local subtotal for visitors.
-      const subtotal = e.seating === "assigned"
-        ? seatIds.reduce((s, id) => s + (seatMap?.priceBySection[seatMap.seats.find((x) => x.id === id)?.section ?? ""]?.price ?? 0), 0)
-        : items.reduce((s, it) => s + (e.ticketTypes.find((tt) => tt.id === it.ticketTypeId)?.price_kzt ?? 0) * it.quantity, 0);
-      setQuote({ count: 0, subtotal, discount: 0, fee: 0, total: subtotal, promo: null, promoError: null });
-      return;
-    }
     const id = setTimeout(() => {
       api<Quote>("/orders/quote", { body: { eventId: e.id, items, seatIds, promoCode: campaignToken ? null : appliedPromo, campaignToken } }).then(setQuote).catch(setErr);
     }, 250);
     return () => clearTimeout(id);
-  }, [e, items, seatIds, appliedPromo, campaignToken, user, hasSelection, seatMap]);
+  }, [e, items, seatIds, appliedPromo, campaignToken, hasSelection]);
 
   if (loading) return <Spinner />;
   if (error || !e) return <div className="mx-auto max-w-3xl px-4 py-16"><ErrorBox error={error ?? "Event not found"} /></div>;
@@ -187,7 +183,8 @@ function EventPageInner() {
       setErr(x);
       if (e.seating === "assigned") {
         setSeatIds([]);
-        void loadSeats();
+        if (isStadium) setSeatRefresh((n) => n + 1);
+        else void loadSeats();
       }
     } finally {
       setBusy(false);
@@ -202,6 +199,63 @@ function EventPageInner() {
       setCopied(true);
     }
   };
+
+  // Promo code, price preview, attendee details and the Continue button (in the tickets card, or the stadium's "Your seats" panel).
+  const checkoutPanel = (
+    <div className="space-y-4">
+                <div className="flex gap-2">
+                  <Input
+                    aria-label={t("promoCode")}
+                    placeholder={t("promoCode")}
+                    value={promo}
+                    onChange={(x) => {
+                      // Editing or clearing the field removes the previously applied code; press Apply for a new one.
+                      setPromo(x.target.value.toUpperCase());
+                      setAppliedPromo(null);
+                      setCampaignToken(null);
+                      setErr(null);
+                    }}
+                    onKeyDown={(x) => {
+                      if (x.key === "Enter") {
+                        x.preventDefault();
+                        setAppliedPromo(promo.trim() || null);
+                      }
+                    }}
+                  />
+                  <Button variant="secondary" onClick={() => { setCampaignToken(null); setAppliedPromo(promo.trim() || null); }} disabled={!promo.trim()}>{t("apply")}</Button>
+                </div>
+                {(appliedPromo || campaignToken) && quote?.promoError && (
+                  <p className="text-sm text-red-600">
+                    {quote.promoError}.{" "}
+                    <button className="font-semibold underline" onClick={() => { setPromo(""); setAppliedPromo(null); setCampaignToken(null); }}>Remove code</button>
+                  </p>
+                )}
+                {quote?.promo && (
+                  <p className="text-sm font-semibold text-green-700">
+                    ✓ {t("promoCode")} {quote.promo.code}{" "}
+                    <button className="font-normal text-muted underline" onClick={() => { setPromo(""); setAppliedPromo(null); setCampaignToken(null); }}>×</button>
+                  </p>
+                )}
+                {quote && (
+                  <dl className="space-y-1 border-t border-line pt-3 text-sm">
+                    <div className="flex justify-between"><dt>{t("subtotal")}</dt><dd>{kzt(quote.subtotal)}</dd></div>
+                    {quote.discount > 0 && <div className="flex justify-between text-green-700"><dt>{t("discount")}</dt><dd>−{kzt(quote.discount)}</dd></div>}
+                    {quote.fee > 0 && <div className="flex justify-between"><dt>{t("fee")}</dt><dd>{kzt(quote.fee)}</dd></div>}
+                    <div className="flex justify-between text-base font-bold"><dt>{t("total")}</dt><dd className="text-brand">{kzt(quote.total)}</dd></div>
+                  </dl>
+                )}
+                {user && (
+                  <div className="grid gap-2">
+                    <Field label={t("attendeeName")}><Input value={name} onChange={(x) => setName(x.target.value)} /></Field>
+                    <Field label={t("email")}><Input type="email" value={email} onChange={(x) => setEmail(x.target.value)} /></Field>
+                  </div>
+                )}
+                <ErrorBox error={err} />
+                <Button className="w-full" onClick={checkout} loading={busy} disabled={closed}>
+                  {user ? t("continue") : `${t("login")} → ${t("continue")}`}
+                </Button>
+    </div>
+  );
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -293,70 +347,27 @@ function EventPageInner() {
                   </div>
                 ))}
                 <p className="pt-1 text-xs text-muted">{t("chooseSeats")} ↓</p>
+                {isStadium && <a href="#seats" className="block pt-1 text-sm font-semibold text-brand">Open the stadium map ↓</a>}
               </div>
             )}
 
-            {hasSelection && (
-              <>
-                <div className="flex gap-2">
-                  <Input
-                    aria-label={t("promoCode")}
-                    placeholder={t("promoCode")}
-                    value={promo}
-                    onChange={(x) => {
-                      // Editing or clearing the field removes the previously applied code; press Apply for a new one.
-                      setPromo(x.target.value.toUpperCase());
-                      setAppliedPromo(null);
-                      setCampaignToken(null);
-                      setErr(null);
-                    }}
-                    onKeyDown={(x) => {
-                      if (x.key === "Enter") {
-                        x.preventDefault();
-                        setAppliedPromo(promo.trim() || null);
-                      }
-                    }}
-                  />
-                  <Button variant="secondary" onClick={() => { setCampaignToken(null); setAppliedPromo(promo.trim() || null); }} disabled={!promo.trim()}>{t("apply")}</Button>
-                </div>
-                {(appliedPromo || campaignToken) && quote?.promoError && (
-                  <p className="text-sm text-red-600">
-                    {quote.promoError}.{" "}
-                    <button className="font-semibold underline" onClick={() => { setPromo(""); setAppliedPromo(null); setCampaignToken(null); }}>Remove code</button>
-                  </p>
-                )}
-                {quote?.promo && (
-                  <p className="text-sm font-semibold text-green-700">
-                    ✓ {t("promoCode")} {quote.promo.code}{" "}
-                    <button className="font-normal text-muted underline" onClick={() => { setPromo(""); setAppliedPromo(null); setCampaignToken(null); }}>×</button>
-                  </p>
-                )}
-                {quote && (
-                  <dl className="space-y-1 border-t border-line pt-3 text-sm">
-                    <div className="flex justify-between"><dt>{t("subtotal")}</dt><dd>{kzt(quote.subtotal)}</dd></div>
-                    {quote.discount > 0 && <div className="flex justify-between text-green-700"><dt>{t("discount")}</dt><dd>−{kzt(quote.discount)}</dd></div>}
-                    {quote.fee > 0 && <div className="flex justify-between"><dt>{t("fee")}</dt><dd>{kzt(quote.fee)}</dd></div>}
-                    <div className="flex justify-between text-base font-bold"><dt>{t("total")}</dt><dd className="text-brand">{kzt(quote.total)}</dd></div>
-                  </dl>
-                )}
-                {user && (
-                  <div className="grid gap-2">
-                    <Field label={t("attendeeName")}><Input value={name} onChange={(x) => setName(x.target.value)} /></Field>
-                    <Field label={t("email")}><Input type="email" value={email} onChange={(x) => setEmail(x.target.value)} /></Field>
-                  </div>
-                )}
-                <ErrorBox error={err} />
-                <Button className="w-full" onClick={checkout} loading={busy} disabled={closed}>
-                  {user ? t("continue") : `${t("login")} → ${t("continue")}`}
-                </Button>
-              </>
-            )}
-            {!hasSelection && <ErrorBox error={err} />}
+            {hasSelection && !isStadium && checkoutPanel}
+            {!isStadium && !hasSelection && <ErrorBox error={err} />}
           </Card>
         </aside>
       </div>
 
-      {e.seating === "assigned" && (
+      {e.seating === "assigned" && isStadium && e.venue.layout && (
+        <section className="mt-8">
+          {paidBlocked && <div className="mb-4"><Notice tone="amber">Paid sales for this event are not active yet.</Notice></div>}
+          {!hasSelection && <div className="mb-4"><ErrorBox error={err} /></div>}
+          <StadiumPicker eventId={e.id} query={qs.toString()} layout={e.venue.layout} selected={seatIds} onChange={setSeatIds} refreshKey={seatRefresh} disabled={closed || paidBlocked}>
+            {checkoutPanel}
+          </StadiumPicker>
+        </section>
+      )}
+
+      {e.seating === "assigned" && !isStadium && (
         <section className="mt-8" id="seats">
           <Card>
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">

@@ -89,10 +89,91 @@ async function ticketType(eventId: number, name: string, price: number, quantity
   return t!.id;
 }
 
+/**
+ * Stadium with two rings of sectors (lower 101–122, upper 201–232), drawn by the website's stadium seat picker.
+ * `layout` holds only drawing data; every seat is a real row in `seats`. Added once, also to existing databases.
+ */
+export const STADIUM_LAYOUT = {
+  type: "stadium",
+  width: 820,
+  height: 600,
+  stands: {
+    N: { name: "North stand", color: "#E8343F" },
+    E: { name: "East stand", color: "#3FA7E6" },
+    S: { name: "South stand", color: "#3DBB5A" },
+    W: { name: "West stand", color: "#F5B331" },
+  },
+  rings: [
+    { tier: "lower", n: 22, a: 200, b: 136, h: 48, z: 0, rake: -28, start: 101, rows: 10, seats: 16 },
+    { tier: "upper", n: 32, a: 264, b: 200, h: 60, z: 24, rake: -32, start: 201, rows: 12, seats: 18 },
+  ],
+} as const;
+
+function standOf(index: number, n: number) {
+  const tm = -Math.PI / 2 + (2 * Math.PI * (index + 0.5)) / n;
+  const deg = (tm * 180) / Math.PI;
+  return deg < -45 ? "N" : deg < 45 ? "E" : deg < 135 ? "S" : deg < 225 ? "W" : "N";
+}
+
+async function ensureStadiumDemo() {
+  if (await one("SELECT 1 FROM venues WHERE name = 'Astana Arena'")) return;
+  const organizer = await one<{ id: number }>("SELECT id FROM users WHERE email = 'organizer@biletflow.kz'");
+  if (!organizer) return;
+
+  const sectors: { code: string; ring: number; index: number; side: string; tier: string }[] = [];
+  STADIUM_LAYOUT.rings.forEach((r, ring) => {
+    for (let i = 0; i < r.n; i++) sectors.push({ code: String(r.start + i), ring, index: i, side: standOf(i, r.n), tier: r.tier });
+  });
+  const venue = await one<{ id: number }>(
+    `INSERT INTO venues (name, city, address, timezone, kind, has_seat_map, map_width, map_height, layout)
+     VALUES ('Astana Arena', 'Astana', 'Turan Avenue, Astana', 'Asia/Almaty', 'stadium', true, 820, 600, $1) RETURNING id`,
+    [JSON.stringify({ ...STADIUM_LAYOUT, sectors })],
+  );
+  for (const s of sectors) {
+    const r = STADIUM_LAYOUT.rings[s.ring];
+    const stand = STADIUM_LAYOUT.stands[s.side as keyof typeof STADIUM_LAYOUT.stands];
+    const sec = await one<{ id: number }>(
+      "INSERT INTO venue_sections (venue_id, code, name, price_category) VALUES ($1, $2, $3, $4) RETURNING id",
+      [venue!.id, s.code, `Sector ${s.code} · ${stand.name}, ${s.tier} tier`, s.tier],
+    );
+    // Row 1, seats 1–2 of every fifth lower sector are wheelchair-accessible.
+    await q(
+      `INSERT INTO seats (venue_id, section_id, row_label, seat_number, accessible, x, y)
+       SELECT $1, $2, r::text, n, ($5 AND r = 1 AND n <= 2), n, r
+         FROM generate_series(1, $3) r, generate_series(1, $4) n`,
+      [venue!.id, sec!.id, r.rows, r.seats, s.tier === "lower" && s.index % 5 === 0],
+    );
+  }
+
+  const seatsIn = (codes: string[]) => sectors.filter((s) => codes.includes(s.code)).reduce((sum, s) => sum + STADIUM_LAYOUT.rings[s.ring].rows * STADIUM_LAYOUT.rings[s.ring].seats, 0);
+  const pick = (tier: string, sides: string[]) => sectors.filter((s) => s.tier === tier && sides.includes(s.side)).map((s) => s.code);
+  const groups = [
+    { name: "Lower tier · North & South", price: 25_000, codes: pick("lower", ["N", "S"]), description: "Behind the goals, close to the pitch" },
+    { name: "Lower tier · East & West", price: 18_000, codes: pick("lower", ["E", "W"]), description: "Along the touchline, close to the pitch" },
+    { name: "Upper tier · North & South", price: 12_000, codes: pick("upper", ["N", "S"]), description: "Behind the goals, full view" },
+    { name: "Upper tier · East & West", price: 8_000, codes: pick("upper", ["E", "W"]), description: "Along the touchline, full view" },
+  ];
+  const capacity = groups.reduce((s, g) => s + seatsIn(g.codes), 0);
+  const ev = await event(organizer.id, venue!.id, {
+    title: "Kazakhstan Super Cup Final",
+    category: "sports",
+    description: "The season opener between the league champion and the cup winner. Pick your sector on the 3D stadium map and choose your seats.",
+    image: "/images/football.svg",
+    starts: at(18, 18),
+    hours: 2,
+    seating: "assigned",
+    capacity,
+    paid: true,
+  });
+  for (const g of groups) await ticketType(ev, g.name, g.price, seatsIn(g.codes), { description: g.description, sections: g.codes, maxPerOrder: 8 });
+  console.log(`seed: added Astana Arena stadium (${sectors.length} sectors, ${capacity} seats) and the Super Cup event`);
+}
+
 async function main() {
   const existing = await one("SELECT 1 FROM users LIMIT 1");
   if (existing) {
-    console.log("seed: data already present, skipping");
+    await ensureStadiumDemo();
+    console.log("seed: data already present, skipping the rest");
     return;
   }
 
@@ -208,6 +289,7 @@ async function main() {
   ]);
   void admin;
 
+  await ensureStadiumDemo();
   console.log(`seed: done. Demo accounts (password ${PASSWORD}): admin@, organizer@, attendee@, attendee2@, staff@biletflow.kz`);
 }
 

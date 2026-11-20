@@ -12,7 +12,6 @@ import { halykPaymentObject, halykStatus } from "../services/halyk.js";
 import { cancelPendingOrder, completePayment, createOrder, discountFor, findCampaign, releaseExpiredReservations, settingNumber, startPayment } from "../services/orders.js";
 
 export const ordersRouter = Router();
-ordersRouter.use(requireAuth);
 
 const cartSchema = z.object({
   eventId: z.coerce.number().int().positive(),
@@ -22,7 +21,7 @@ const cartSchema = z.object({
   campaignToken: z.string().trim().max(60).nullable().optional(),
 });
 
-/** Price preview with the promo code applied, before anything is reserved. */
+/** Price preview with the promo code applied, before anything is reserved. Public: no account needed. */
 ordersRouter.post("/quote", async (req, res) => {
   const body = parse(cartSchema, req.body);
   const event = await getEvent(body.eventId);
@@ -55,6 +54,9 @@ ordersRouter.post("/quote", async (req, res) => {
   const fee = Math.round(((subtotal - discount) * (await settingNumber("processing_fee_percent"))) / 100);
   res.json({ count: lines.length, subtotal, discount, fee, total: subtotal - discount + fee, promo: campaign && !promoError ? { code: campaign.code } : null, promoError });
 });
+
+// Everything below needs a signed-in user; the price preview above is public so visitors see totals.
+ordersRouter.use(requireAuth);
 
 ordersRouter.post("/", async (req, res) => {
   const body = parse(
