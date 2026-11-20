@@ -18,6 +18,8 @@ import EventEditor from './pages/organizer/EventEditor'
 import Admin from './pages/admin/Admin'
 import OrganizerPublic from './pages/OrganizerPublic'
 import { Privacy, NotFound } from './pages/Static'
+import HowItWorks from './pages/HowItWorks'
+import Pricing from './pages/Pricing'
 import ErrorBoundary from './components/ErrorBoundary'
 
 function LanguageMenu() {
@@ -33,7 +35,7 @@ function LanguageMenu() {
   return <div className="relative">
     <button onClick={() => setOpen(!open)} className="flex items-center gap-1 text-xs font-semibold text-slate-600" aria-haspopup="listbox" aria-expanded={open}>🇰🇿 {current.flag} · KZT <ChevronDown size={13}/></button>
     {open && <div className="absolute right-0 top-8 z-50 w-40 rounded-xl border border-slate-200 bg-white p-1 shadow-xl" role="listbox">
-      {LANGS.map(l => <button key={l.code} onClick={() => choose(l.code)} className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm ${l.code === lang ? 'bg-blue-50 font-bold text-brand' : 'hover:bg-slate-50'}`}>{l.label}<span className="text-[10px] text-slate-400">{l.flag}</span></button>)}
+      {LANGS.map(l => <button key={l.code} onClick={() => choose(l.code)} className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm ${l.code === lang ? 'bg-blue-50 font-bold text-[#7138c8]' : 'hover:bg-slate-50'}`}>{l.label}<span className="text-[10px] text-slate-400">{l.flag}</span></button>)}
     </div>}
   </div>
 }
@@ -60,7 +62,7 @@ function NotificationBell() {
   return <div className="relative" ref={ref}>
     <button onClick={() => { setOpen(!open); if (!open) load() }} className="relative rounded-xl border border-slate-200 bg-white p-2.5 text-slate-600" aria-label={t('Notifications')}><Bell size={17}/>{data.unread > 0 && <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-rose-500 px-1 text-[9px] font-bold text-white">{data.unread}</span>}</button>
     {open && <div className="absolute right-0 top-12 z-50 w-[min(92vw,360px)] rounded-2xl border border-slate-200 bg-white shadow-xl">
-      <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3"><span className="text-sm font-extrabold">{t('Notifications')}</span><button onClick={() => api.post('/notifications/read-all').then(load)} className="text-xs font-bold text-brand">{t('Mark all read')}</button></div>
+      <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3"><span className="text-sm font-extrabold">{t('Notifications')}</span><button onClick={() => api.post('/notifications/read-all').then(load)} className="text-xs font-bold text-[#7138c8]">{t('Mark all read')}</button></div>
       <div className="max-h-96 overflow-y-auto">{data.items.length === 0 ? <p className="p-6 text-center text-sm text-slate-400">{t('No notifications yet')}</p> : data.items.map(n => <button key={n.id} onClick={() => openItem(n)} className={`block w-full border-b border-slate-50 px-4 py-3 text-left hover:bg-slate-50 ${n.read ? '' : 'bg-blue-50/50'}`}><p className="text-sm font-bold">{n.title}</p><p className="mt-0.5 line-clamp-2 text-xs text-slate-500">{n.body}</p><p className="mt-1 text-[10px] text-slate-400">{fmtDateTime(n.created_at, undefined, locale)}</p></button>)}</div>
     </div>}
   </div>
@@ -80,9 +82,9 @@ function UserMenu() {
   if (!user) return null
   const go = (to: string) => { setOpen(false); nav(to) }
   return <div className="relative" ref={ref}>
-    <button onClick={() => setOpen(!open)} className="flex items-center gap-2 rounded-xl px-2 py-1.5 text-sm font-semibold hover:bg-slate-100"><span className="grid h-8 w-8 place-items-center rounded-full bg-brand text-xs font-bold text-white">{user.full_name.slice(0, 1).toUpperCase()}</span><span className="hidden max-w-[120px] truncate lg:inline">{user.full_name}</span><ChevronDown size={14}/></button>
+    <button onClick={() => setOpen(!open)} className="flex items-center gap-2 rounded-xl px-2 py-1.5 text-sm font-semibold hover:bg-slate-100"><span className="grid h-8 w-8 place-items-center rounded-full bg-[#7138c8] text-xs font-bold text-white">{user.full_name.slice(0, 1).toUpperCase()}</span><span className="hidden max-w-[120px] truncate lg:inline">{user.full_name}</span><ChevronDown size={14}/></button>
     {open && <div className="absolute right-0 top-12 z-50 w-60 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl">
-      <div className="px-3 py-2"><p className="truncate text-sm font-bold">{user.full_name}</p><p className="truncate text-xs text-slate-500">{user.email}</p><p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-brand">{user.role.replace('_', ' ')}</p></div>
+      <div className="px-3 py-2"><p className="truncate text-sm font-bold">{user.full_name}</p><p className="truncate text-xs text-slate-500">{user.email}</p><p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-[#7138c8]">{user.role.replace('_', ' ')}</p></div>
       <button className="nav-mobile flex w-full items-center gap-2" onClick={() => go('/account')}><Ticket size={15}/>{t('My tickets & orders')}</button>
       <button className="nav-mobile flex w-full items-center gap-2" onClick={() => go('/account?tab=profile')}><UserIcon size={15}/>{t('Profile')}</button>
       <button className="nav-mobile flex w-full items-center gap-2" onClick={() => go('/organizer')}><LayoutDashboard size={15}/>{t('Organizer dashboard')}</button>
@@ -100,14 +102,14 @@ function Header() {
   const nav = useNavigate()
   const loc = useLocation()
   useEffect(() => { setMobileNav(false) }, [loc.pathname])
-  const navCls = ({ isActive }: { isActive: boolean }) => `text-sm font-semibold ${isActive ? 'text-brand' : 'text-slate-600 hover:text-ink'}`
-  return <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
+  const navCls = ({ isActive }: { isActive: boolean }) => `text-sm font-semibold ${isActive ? 'text-[#7138c8]' : 'text-slate-600 hover:text-ink'}`
+  return <header className="sticky top-0 z-40 border-b border-[#eee8f6] bg-white/95 backdrop-blur-xl">
     <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between px-4 sm:px-6 lg:px-8">
-      <Link to="/" className="flex items-center gap-2.5" aria-label="BiletFlow home"><span className="grid h-9 w-9 place-items-center rounded-xl bg-brand text-white shadow-lg shadow-blue-200"><TicketCheck size={21}/></span><span className="text-[21px] font-extrabold tracking-tight">Bilet<span className="text-brand">Flow</span></span></Link>
-      <nav className="hidden items-center gap-7 md:flex"><NavLink to="/" end className={navCls}>{t('Events')}</NavLink><NavLink to="/organizer" className={navCls}>{t('For Organizers')}</NavLink><Link to="/#how-it-works" className="text-sm font-semibold text-slate-600 hover:text-ink">{t('How It Works')}</Link><Link to="/#pricing" className="text-sm font-semibold text-slate-600 hover:text-ink">{t('Pricing')}</Link></nav>
+      <Link to="/" className="flex items-center gap-2.5" aria-label="BiletFlow home"><span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-[#9a3bd0] to-[#5b2ab5] text-white shadow-lg shadow-purple-200"><TicketCheck size={21}/></span><span className="text-[21px] font-extrabold tracking-tight">Bilet<span className="text-[#7138c8]">Flow</span></span></Link>
+      <nav className="hidden items-center gap-7 md:flex"><NavLink to="/" end className={navCls}>{t('Events')}</NavLink><NavLink to="/organizer" className={navCls}>{t('For Organizers')}</NavLink><NavLink to="/how-it-works" className={navCls}>{t('How It Works')}</NavLink><NavLink to="/pricing" className={navCls}>{t('Pricing')}</NavLink></nav>
       <div className="hidden items-center gap-3 sm:flex">
         <LanguageMenu/>
-        {user ? <><NotificationBell/><UserMenu/></> : <><button onClick={() => nav('/login')} className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">{t('Log in')}</button><button onClick={() => nav('/register')} className="rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white shadow-md shadow-blue-200 hover:bg-blue-700">{t('Sign up')}</button></>}
+        {user ? <><NotificationBell/><UserMenu/></> : <><button onClick={() => nav('/login')} className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">{t('Log in')}</button><button onClick={() => nav('/register')} className="rounded-full bg-[#ed1686] px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-pink-100 hover:bg-[#d80c76]">{t('Sign up')}</button></>}
       </div>
       <div className="flex items-center gap-2 sm:hidden">{user && <NotificationBell/>}<button className="rounded-lg p-2" onClick={() => setMobileNav(!mobileNav)} aria-label="Toggle navigation">{mobileNav ? <X/> : <Menu/>}</button></div>
       <button className="hidden rounded-lg p-2 sm:block md:hidden" onClick={() => setMobileNav(!mobileNav)} aria-label="Toggle navigation">{mobileNav ? <X/> : <Menu/>}</button>
@@ -115,6 +117,8 @@ function Header() {
     {mobileNav && <div className="border-t border-slate-100 bg-white p-4 md:hidden"><div className="flex flex-col gap-1">
       <Link className="nav-mobile" to="/">{t('Events')}</Link>
       <Link className="nav-mobile" to="/organizer">{t('For Organizers')}</Link>
+      <Link className="nav-mobile" to="/how-it-works">{t('How It Works')}</Link>
+      <Link className="nav-mobile" to="/pricing">{t('Pricing')}</Link>
       {user ? <>
         <Link className="nav-mobile" to="/account">{t('My tickets & orders')}</Link>
         <Link className="nav-mobile" to="/support">{t('Support')}</Link>
@@ -131,7 +135,7 @@ function VerifyBanner() {
   const { t } = useI18n()
   const [sent, setSent] = useState(false)
   if (!user || user.email_verified) return null
-  return <div className="border-b border-amber-100 bg-amber-50 px-4 py-2 text-center text-xs text-amber-900">{t('Please verify your email address.')} <span className="text-amber-700">(Local inbox: <a className="font-bold underline" href="http://localhost:8025" target="_blank" rel="noreferrer">Mailpit</a>)</span> <button disabled={sent} onClick={() => api.post('/auth/resend-verification').then(() => setSent(true))} className="ml-2 font-bold text-brand disabled:text-slate-400">{sent ? '✓' : t('Resend email')}</button></div>
+  return <div className="border-b border-amber-100 bg-amber-50 px-4 py-2 text-center text-xs text-amber-900">{t('Please verify your email address.')} <span className="text-amber-700">(Local inbox: <a className="font-bold underline" href="http://localhost:8025" target="_blank" rel="noreferrer">Mailpit</a>)</span> <button disabled={sent} onClick={() => api.post('/auth/resend-verification').then(() => setSent(true))} className="ml-2 font-bold text-[#7138c8] disabled:text-slate-400">{sent ? '✓' : t('Resend email')}</button></div>
 }
 
 function ScrollToHash() {
@@ -145,12 +149,12 @@ function ScrollToHash() {
 
 function Footer() {
   const { t } = useI18n()
-  return <footer className="mt-12 border-t border-slate-200 bg-white"><div className="mx-auto flex max-w-[1440px] flex-col gap-4 px-4 py-7 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8"><Link to="/" className="flex items-center gap-2 font-extrabold text-ink"><span className="grid h-7 w-7 place-items-center rounded-lg bg-brand text-white"><TicketCheck size={16}/></span>BiletFlow</Link><p>{t('Made for memorable moments across Kazakhstan.')}</p><div className="flex gap-4"><Link to="/support" className="hover:text-brand">{t('Help & Support')}</Link><Link to="/privacy" className="hover:text-brand">{t('Privacy')}</Link><span>© 2026 BiletFlow · Demo</span></div></div></footer>
+  return <footer className="mt-16 border-t border-[#eee8f6] bg-[#160b4d] text-white"><div className="mx-auto flex max-w-[1240px] flex-col gap-4 px-4 py-10 text-xs text-white/65 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8"><Link to="/" className="flex items-center gap-2 font-extrabold text-white"><span className="grid h-7 w-7 place-items-center rounded-lg bg-[#ed1686] text-white"><TicketCheck size={16}/></span>BiletFlow</Link><p>{t('Made for memorable moments across Kazakhstan.')}</p><div className="flex gap-4"><Link to="/how-it-works" className="hover:text-white">{t('How It Works')}</Link><Link to="/pricing" className="hover:text-white">{t('Pricing')}</Link><Link to="/support" className="hover:text-white">{t('Help & Support')}</Link><Link to="/privacy" className="hover:text-white">{t('Privacy')}</Link><span>© 2026 BiletFlow · Made for moments in Kazakhstan</span></div></div></footer>
 }
 
 export default function App() {
   const loc = useLocation()
-  return <div className="min-h-screen bg-canvas">
+  return <div className="min-h-screen bg-white">
     <ScrollToHash/>
     <Header/>
     <VerifyBanner/>
@@ -175,6 +179,8 @@ export default function App() {
         <Route path="/verify-email" element={<VerifyEmail/>}/>
         <Route path="/forgot-password" element={<ForgotPassword/>}/>
         <Route path="/reset-password" element={<ResetPassword/>}/>
+        <Route path="/how-it-works" element={<HowItWorks/>}/>
+        <Route path="/pricing" element={<Pricing/>}/>
         <Route path="/privacy" element={<Privacy/>}/>
         <Route path="*" element={<NotFound/>}/>
       </Routes></ErrorBoundary>
