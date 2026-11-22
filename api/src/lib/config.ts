@@ -16,6 +16,8 @@ export const config = {
   // Public address of the website. The API is reached through the website at /api.
   webUrl: required("WEB_URL", "http://localhost:3000").replace(/\/$/, ""),
   uploadDir: process.env.UPLOAD_DIR ?? "uploads",
+  // Optional browser origins allowed to call the API directly (e.g. the Expo web preview). Native mobile apps do not need this.
+  corsOrigins: (process.env.CORS_ORIGINS ?? "").split(",").map((s) => s.trim()).filter(Boolean),
   reservationMinutes: Number(process.env.RESERVATION_MINUTES ?? 10),
   smtp: {
     host: process.env.SMTP_HOST ?? "",

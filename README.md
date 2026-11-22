@@ -6,12 +6,12 @@ Self-service event ticketing for Kazakhstan. Organizers create events and issue 
 
 ## Stack
 
-TypeScript everywhere · **Node.js + Express** REST API · **PostgreSQL** (plain SQL, no ORM) · **Next.js** + Tailwind CSS website · React Native scanner app (next phase) · **Docker**
+TypeScript everywhere · **Node.js + Express** REST API · **PostgreSQL** (plain SQL, no ORM) · **Next.js** + Tailwind CSS website · **React Native / Expo** mobile app · **Docker**
 
 ```
 api/      REST API (Express): routes/, services/, lib/, db/ (migrations runner + demo seed), migrations/*.sql
 frontend/ Next.js website: attendee pages, organizer dashboard, check-in, platform admin
-mobile/   React Native Event Admin scanner app (phase 2)
+mobile/   React Native (Expo) app for attendees, organizers, Event Admins (camera QR scanner) and platform admins
 docs/     SRS, plan, decisions, payment research, designs
 ```
 
@@ -72,6 +72,15 @@ Website on http://localhost:3000, API on http://localhost:4000.
 - Organizer analytics, event history timeline (append-only audit log)
 - Platform admin: search, suspend users/events, stop paid sales, reports, settings, CSV exports
 - Russian, Kazakh and English for customer-facing pages
+
+## Mobile app
+
+See [mobile/README.md](mobile/README.md) and [docs/mobile-setup.md](docs/mobile-setup.md) (Windows, phone on the same Wi-Fi, firewall).
+
+```bash
+cd mobile && npm install && cp .env.example .env   # set EXPO_PUBLIC_SERVER_URL=http://<laptop-LAN-IP>:3000
+npx expo start                                     # open with Expo Go
+```
 
 ## Database changes
 
