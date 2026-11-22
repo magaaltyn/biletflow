@@ -11,7 +11,8 @@ services:
       POSTGRES_PASSWORD: biletflow
       POSTGRES_DB: biletflow
     ports:
-      - "5432:5432"
+      # DB_PORT lets the database use another host port when 5432 is taken (e.g. a local PostgreSQL install).
+      - "${DB_PORT:-5432}:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
@@ -39,6 +40,9 @@ services:
       SMTP_HOST: mailpit
       SMTP_PORT: "1025"
       UPLOAD_DIR: /app/uploads
+    ports:
+      # Direct API access for the mobile app (phones on the same Wi-Fi use http://<laptop-LAN-IP>:4000).
+      - "4000:4000"
     volumes:
       - uploads:/app/uploads
     depends_on:
