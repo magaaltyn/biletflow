@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 860" font-family="Inter,Arial,sans-serif">
+  <rect width="1000" height="860" rx="40" fill="#f1f5f9"/>
+  <path d="M60 140 Q500 -40 940 140 L960 760 Q500 900 40 760 Z" fill="#e2e8f0"/>
+  <rect x="300" y="40" width="400" height="70" rx="12" fill="#334155"/>
+  <text x="500" y="84" text-anchor="middle" font-size="24" font-weight="800" fill="#fff">STAGE · СЦЕНА</text>
+  
+  <rect x="144" y="140" width="228" height="172" rx="14" fill="#0d9488" stroke="#fff" stroke-width="4"/>
+  <text x="258" y="230" text-anchor="middle" font-size="34" font-weight="800" fill="#fff">A</text>
+  <text x="258" y="256" text-anchor="middle" font-size="14" fill="#fff" opacity=".9">Premium</text>
+  
+  <rect x="389" y="140" width="228" height="172" rx="14" fill="#0d9488" stroke="#fff" stroke-width="4"/>
+  <text x="503" y="230" text-anchor="middle" font-size="34" font-weight="800" fill="#fff">B</text>
+  <text x="503" y="256" text-anchor="middle" font-size="14" fill="#fff" opacity=".9">Premium</text>
+  
+  <rect x="634" y="140" width="228" height="172" rx="14" fill="#0d9488" stroke="#fff" stroke-width="4"/>
+  <text x="748" y="230" text-anchor="middle" font-size="34" font-weight="800" fill="#fff">C</text>
+  <text x="748" y="256" text-anchor="middle" font-size="14" fill="#fff" opacity=".9">Premium</text>
+  
+  <rect x="24" y="350" width="150" height="240" rx="14" fill="#16a34a" stroke="#fff" stroke-width="4"/>
+  <text x="99" y="474" text-anchor="middle" font-size="34" font-weight="800" fill="#fff">D</text>
+  <text x="99" y="500" text-anchor="middle" font-size="14" fill="#fff" opacity=".9">Standard</text>
+  
+  <rect x="804" y="350" width="150" height="240" rx="14" fill="#16a34a" stroke="#fff" stroke-width="4"/>
+  <text x="879" y="474" text-anchor="middle" font-size="34" font-weight="800" fill="#fff">E</text>
+  <text x="879" y="500" text-anchor="middle" font-size="14" fill="#fff" opacity=".9">Standard</text>
+  
+  <rect x="184" y="530" width="192" height="210" rx="14" fill="#65a30d" stroke="#fff" stroke-width="4"/>
+  <text x="280" y="639" text-anchor="middle" font-size="34" font-weight="800" fill="#fff">F</text>
+  <text x="280" y="665" text-anchor="middle" font-size="14" fill="#fff" opacity=".9">Economy ♿</text>
+  
+  <rect x="404" y="530" width="192" height="210" rx="14" fill="#65a30d" stroke="#fff" stroke-width="4"/>
+  <text x="500" y="639" text-anchor="middle" font-size="34" font-weight="800" fill="#fff">H</text>
+  <text x="500" y="665" text-anchor="middle" font-size="14" fill="#fff" opacity=".9">Economy</text>
+  
+  <rect x="624" y="530" width="192" height="210" rx="14" fill="#65a30d" stroke="#fff" stroke-width="4"/>
+  <text x="720" y="639" text-anchor="middle" font-size="34" font-weight="800" fill="#fff">G</text>
+  <text x="720" y="665" text-anchor="middle" font-size="14" fill="#fff" opacity=".9">Economy ♿</text>
+  <rect x="400" y="340" width="200" height="150" rx="16" fill="#cbd5e1"/>
+  <text x="500" y="420" text-anchor="middle" font-size="18" font-weight="700" fill="#475569">Floor / Танцпол</text>
+  <g font-size="15" fill="#334155" font-weight="700">
+    <text x="40" y="815">⬅ Entrance 1</text><text x="420" y="835">Entrance 2 · Elevator ♿</text><text x="830" y="815">Entrance 3 ➡</text>
+  </g>
+</svg>
