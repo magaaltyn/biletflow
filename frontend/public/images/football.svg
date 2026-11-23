@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0A1433"/><stop offset="1" stop-color="#13204A"/></linearGradient>
+    <radialGradient id="glow" cx=".5" cy=".05" r=".8"><stop offset="0" stop-color="#FDE68A" stop-opacity=".55"/><stop offset="1" stop-color="#FDE68A" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#sky)"/>
+  <rect width="1600" height="1000" fill="url(#glow)"/>
+  <ellipse cx="800" cy="640" rx="760" ry="330" fill="#22305E"/>
+  <ellipse cx="800" cy="650" rx="640" ry="250" fill="#E8343F" opacity=".85"/>
+  <ellipse cx="800" cy="655" rx="560" ry="205" fill="#3FA7E6" opacity=".85"/>
+  <ellipse cx="800" cy="660" rx="470" ry="160" fill="#17482E"/>
+  <rect x="460" y="560" width="680" height="200" fill="#2E8B4A" stroke="#ffffff" stroke-opacity=".8" stroke-width="5"/>
+  <line x1="800" y1="560" x2="800" y2="760" stroke="#ffffff" stroke-opacity=".8" stroke-width="5"/>
+  <circle cx="800" cy="660" r="50" fill="none" stroke="#ffffff" stroke-opacity=".8" stroke-width="5"/>
+  <rect x="460" y="610" width="70" height="100" fill="none" stroke="#ffffff" stroke-opacity=".8" stroke-width="5"/>
+  <rect x="1070" y="610" width="70" height="100" fill="none" stroke="#ffffff" stroke-opacity=".8" stroke-width="5"/>
+  <g fill="#FDE68A"><rect x="180" y="120" width="40" height="18" rx="4"/><rect x="1380" y="120" width="40" height="18" rx="4"/></g>
+  <g stroke="#94A3B8" stroke-width="6"><line x1="200" y1="138" x2="200" y2="420"/><line x1="1400" y1="138" x2="1400" y2="420"/></g>
+</svg>
