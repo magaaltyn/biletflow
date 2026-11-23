@@ -37,7 +37,7 @@ Copy-Item .env.example .env          # set EXPO_PUBLIC_SERVER_URL=http://<laptop
 npx expo start                       # scan the QR with Expo Go (Android) or the Camera app (iPhone)
 ```
 
-The API (`api/`, port 4000) and website (`web/`, port 3000) must be running — see `docs/mobile-setup.md`.
+The API (`api/`, port 4000) and website (`frontend/`, port 3000) must be running — see `docs/mobile-setup.md`.
 
 Checks:
 

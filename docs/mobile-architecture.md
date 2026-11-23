@@ -50,7 +50,7 @@ CameraView (barcodeTypes: qr) ─► scan gate (createScanGate) ─► POST /api
 ## Localisation and theme
 
 Customer-facing screens use the website's dictionary (copied to `src/lib/i18nWeb.ts`) in Russian, Kazakh and English;
-organizer/staff/admin screens are English like the website. Colours are the website palette (`web/app/globals.css`)
+organizer/staff/admin screens are English like the website. Colours are the website palette (`frontend/app/globals.css`)
 including its night theme, following the phone's system setting.
 
 ## Local backend changes made for the app

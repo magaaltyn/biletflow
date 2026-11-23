@@ -1,6 +1,6 @@
 # Mobile feature audit (website → mobile)
 
-Source of truth: the code in `web/` and `api/` at commit `d81e503` (read-only clone of `github.com/magaaltyn/biletflow`),
+Source of truth: the code in `frontend/` and `api/` at commit `d81e503` (read-only clone of `github.com/magaaltyn/biletflow`),
 not the progress reports. Before this work `mobile/` contained **only a README** — no scanner or app existed.
 
 Status legend:
@@ -11,7 +11,7 @@ Status legend:
 
 | # | Feature (website) | Website implementation | Backend endpoint(s) | Mobile implementation | Status |
 |---|---|---|---|---|---|
-| 1 | Register / log in / log out | `web/components/AuthForms.tsx` | `/auth/register`, `/auth/login`, `/auth/logout` | Login, Register (incl. "I organize events"), logout in Profile | ✅ |
+| 1 | Register / log in / log out | `frontend/components/AuthForms.tsx` | `/auth/register`, `/auth/login`, `/auth/logout` | Login, Register (incl. "I organize events"), logout in Profile | ✅ |
 | 2 | Session handling | httpOnly cookie | JWT (Bearer accepted) | SecureStore token, refresh on start (`/auth/refresh`, new), 401 → sign-out + "session expired" | ✅ (logic) · 🟡 keychain on device |
 | 3 | Email verification | `app/verify-email` | `/auth/verify-email`, `/auth/resend-verification` | banner in Profile, resend, paste link/token screen | ✅ |
 | 4 | Password reset | `app/forgot-password`, `app/reset-password` | `/auth/forgot-password`, `/auth/reset-password` | same two screens (paste the emailed link) | ✅ |

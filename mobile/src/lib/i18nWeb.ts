@@ -1,4 +1,4 @@
-// Copied from web/lib/i18n.tsx so the app uses exactly the same customer-facing wording as the website.
+// Copied from frontend/lib/i18n.tsx so the app uses exactly the same customer-facing wording as the website.
 export const webDict = {
   events: { ru: "События", kk: "Іс-шаралар", en: "Events" },
   forOrganizers: { ru: "Организаторам", kk: "Ұйымдастырушыларға", en: "For organizers" },

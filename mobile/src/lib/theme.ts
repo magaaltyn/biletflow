@@ -1,6 +1,6 @@
 import { useColorScheme } from "react-native";
 
-// Same palette as the website (web/app/globals.css), including its night theme.
+// Same palette as the website (frontend/app/globals.css), including its night theme.
 const light = {
   brand: "#1d4ed8",
   brandDark: "#1e3a8a",
