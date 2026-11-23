@@ -74,6 +74,11 @@ authRouter.post("/login", async (req, res) => {
   res.json({ user: await publicUser(user.id), token: signSession(user.id) });
 });
 
+/** Mobile app: exchanges a still-valid token for a fresh 7-day token (sliding session). */
+authRouter.post("/refresh", requireAuth, async (req, res) => {
+  res.json({ user: await publicUser(me(req).id), token: signSession(me(req).id) });
+});
+
 authRouter.post("/logout", (_req, res) => {
   clearSessionCookie(res);
   res.json({ ok: true });

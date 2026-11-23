@@ -42,6 +42,19 @@ checkinRouter.get("/:eventId/stats", async (req, res) => {
   res.json(await stats(event.id));
 });
 
+/** Latest check-in actions for the event (scanner "recent scans" list). */
+checkinRouter.get("/:eventId/recent", async (req, res) => {
+  const { event } = await getCheckInEvent(me(req), idParam(req, "eventId"));
+  res.json(
+    await q(
+      `SELECT c.id, c.action, c.created_at, t.id AS ticket_id, t.code, t.attendee_name, t.status, u.full_name AS staff_name
+         FROM check_ins c JOIN tickets t ON t.id = c.ticket_id LEFT JOIN users u ON u.id = c.staff_id
+        WHERE c.event_id = $1 ORDER BY c.created_at DESC LIMIT 30`,
+      [event.id],
+    ),
+  );
+});
+
 const ticketInfo = `t.id, t.code, t.status, t.attendee_name, t.checked_in_at, t.section_code, t.row_label, t.seat_number, t.event_id, tt.name AS ticket_type`;
 
 /**

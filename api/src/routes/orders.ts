@@ -150,6 +150,20 @@ async function ticketsForDocs(where: string, id: number, user: AuthUser) {
   return rows;
 }
 
+/** All tickets of the signed-in user, newest event first (mobile "My tickets"). QR payload only for usable tickets. */
+ticketsRouter.get("/", async (req, res) => {
+  const rows = await q(
+    `SELECT t.id, t.code, t.status, t.attendee_name, t.checked_in_at, t.section_code, t.row_label, t.seat_number, t.order_id,
+            tt.name AS ticket_type, o.code AS order_code, e.id AS event_id, e.slug, e.title, e.starts_at, e.ends_at, e.image_url,
+            e.status AS event_status, v.name AS venue_name, v.city, v.timezone
+       FROM tickets t JOIN ticket_types tt ON tt.id = t.ticket_type_id JOIN orders o ON o.id = t.order_id
+       JOIN events e ON e.id = t.event_id JOIN venues v ON v.id = e.venue_id
+      WHERE t.user_id = $1 ORDER BY e.starts_at DESC, t.id`,
+    [me(req).id],
+  );
+  res.json(rows.map((t) => ({ ...t, qrPayload: t.status === "valid" || t.status === "checked_in" ? ticketQrPayload(t.code) : null })));
+});
+
 const toDoc = (t: Record<string, any>) => ({
   code: t.code, qrPayload: ticketQrPayload(t.code), eventTitle: t.title, startsAt: t.starts_at, timezone: t.timezone,
   venueName: t.venue_name, venueAddress: t.address, ticketType: t.ticket_type, attendeeName: t.attendee_name,

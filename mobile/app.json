@@ -1,0 +1,62 @@
+{
+  "expo": {
+    "name": "BiletFlow",
+    "slug": "biletflow",
+    "version": "1.0.0",
+    "scheme": "biletflow",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "kz.biletflow.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "BiletFlow uses the camera to scan ticket QR codes at the entrance.",
+        "NSPhotoLibraryUsageDescription": "BiletFlow uses your photos to set event cover images."
+      }
+    },
+    "android": {
+      "package": "kz.biletflow.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#1D4ED8",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": [
+        "android.permission.CAMERA"
+      ],
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "BiletFlow uses the camera to scan ticket QR codes at the entrance.",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "BiletFlow uses your photos to set event cover images."
+        }
+      ],
+      "expo-secure-store",
+      "expo-sharing",
+      "expo-image",
+      "@react-native-community/datetimepicker",
+      "expo-localization",
+      "expo-status-bar",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}
