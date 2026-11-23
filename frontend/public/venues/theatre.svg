@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" font-family="Inter,Arial,sans-serif">
+  <rect width="1000" height="700" rx="40" fill="#f1f5f9"/>
+  <path d="M250 50 H750 L700 150 H300 Z" fill="#7c2d12"/>
+  <text x="500" y="112" text-anchor="middle" font-size="26" font-weight="800" fill="#fff">Сцена · Stage</text>
+  <path d="M180 190 Q500 230 820 190" stroke="#b91c1c" stroke-width="18" fill="none" stroke-dasharray="20 6"/><path d="M172 222 Q500 262 828 222" stroke="#b91c1c" stroke-width="18" fill="none" stroke-dasharray="20 6"/><path d="M164 254 Q500 294 836 254" stroke="#b91c1c" stroke-width="18" fill="none" stroke-dasharray="20 6"/><path d="M156 286 Q500 326 844 286" stroke="#b91c1c" stroke-width="18" fill="none" stroke-dasharray="20 6"/><path d="M148 318 Q500 358 852 318" stroke="#b91c1c" stroke-width="18" fill="none" stroke-dasharray="20 6"/><path d="M140 350 Q500 390 860 350" stroke="#b91c1c" stroke-width="18" fill="none" stroke-dasharray="20 6"/><path d="M132 382 Q500 422 868 382" stroke="#b91c1c" stroke-width="18" fill="none" stroke-dasharray="20 6"/><path d="M124 414 Q500 454 876 414" stroke="#b91c1c" stroke-width="18" fill="none" stroke-dasharray="20 6"/><path d="M116 446 Q500 486 884 446" stroke="#b91c1c" stroke-width="18" fill="none" stroke-dasharray="20 6"/><path d="M108 478 Q500 518 892 478" stroke="#b91c1c" stroke-width="18" fill="none" stroke-dasharray="20 6"/>
+  <text x="500" y="540" text-anchor="middle" font-size="22" font-weight="700" fill="#334155">Parterre / Партер</text>
+  <path d="M120 590 Q500 660 880 590" stroke="#d97706" stroke-width="40" fill="none"/>
+  <text x="500" y="680" text-anchor="middle" font-size="20" font-weight="700" fill="#334155">Balcony / Балкон</text>
+</svg>
