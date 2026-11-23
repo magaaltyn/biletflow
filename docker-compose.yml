@@ -1,0 +1,60 @@
+# BiletFlow local environment
+#   docker compose up --build          -> everything: database, email inbox, API, website
+#   docker compose up -d db mailpit    -> only infrastructure (run api/frontend with npm run dev)
+# Website: http://localhost:3000 · Email inbox: http://localhost:8025
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: biletflow
+      POSTGRES_PASSWORD: biletflow
+      POSTGRES_DB: biletflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U biletflow"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  mailpit:
+    image: axllent/mailpit:v1.21
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+  api:
+    build: ./api
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgres://biletflow:biletflow@db:5432/biletflow
+      WEB_URL: ${WEB_URL:-http://localhost:3000}
+      JWT_SECRET: ${JWT_SECRET:-dev-only-change-me}
+      QR_SECRET: ${QR_SECRET:-dev-only-change-me-too}
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        API_URL: http://api:4000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  db-data:
+  uploads:
