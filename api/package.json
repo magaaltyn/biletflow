@@ -1,0 +1,45 @@
+{
+  "name": "biletflow-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file=../.env src/index.ts",
+    "migrate:dev": "tsx --env-file=../.env src/db/migrate.ts",
+    "seed:dev": "tsx --env-file=../.env src/db/seed.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "migrate": "node dist/db/migrate.js",
+    "seed": "node dist/db/seed.js",
+    "typecheck": "tsc --noEmit",
+    "test:smoke": "node tests/smoke.mjs",
+    "vercel-build": "tsc && node dist/db/migrate.js && node dist/db/seed.js"
+  },
+  "dependencies": {
+    "@vercel/blob": "^2.9.0",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "express": "^5.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.5.0",
+    "nodemailer": "^10.6.1",
+    "pdfkit": "^0.21.0",
+    "pg": "^8.23.1",
+    "qrcode": "^1.5.4",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.3.0",
+    "@types/node": "^24.19.2",
+    "@types/nodemailer": "^8.0.2",
+    "@types/pdfkit": "^0.17.7",
+    "@types/pg": "^8.23.1",
+    "@types/qrcode": "^1.5.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}
