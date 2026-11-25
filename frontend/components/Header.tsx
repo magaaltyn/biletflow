@@ -86,7 +86,6 @@ export function Header() {
 
   const nav = [
     { href: "/events", label: t("events") },
-    { href: "/organizers", label: t("forOrganizers") },
     { href: "/how-it-works", label: t("howItWorks") },
     { href: "/pricing", label: t("pricing") },
   ];
@@ -187,7 +186,6 @@ export function Footer() {
         </div>
         <div className="flex flex-col gap-2">
           <Link href="/events">Events</Link>
-          <Link href="/organizers">For organizers</Link>
           <Link href="/pricing">Pricing</Link>
         </div>
         <div className="flex flex-col gap-2">

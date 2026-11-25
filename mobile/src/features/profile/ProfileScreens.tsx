@@ -24,7 +24,6 @@ export function ProfileScreen() {
   const [edit, setEdit] = useState(false);
   const [form, setForm] = useState({ fullName: user?.full_name ?? "", phone: user?.phone ?? "" });
   const [pw, setPw] = useState({ currentPassword: "", newPassword: "" });
-  const [orgName, setOrgName] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<unknown>(null);
   const [msg, setMsg] = useState<string | null>(null);
@@ -129,18 +128,6 @@ export function ProfileScreen() {
         ) : null}
       </Card>
 
-      {user.role === "attendee" ? (
-        <Card>
-          <T v="label">{t("forOrganizers")}</T>
-          <T v="small">Create events and sell tickets. Your attendee tickets stay in your account.</T>
-          <Field label="Organizer name" value={orgName} onChangeText={setOrgName} placeholder="Steppe Events" />
-          <Button v="secondary" title="Become an organizer" disabled={orgName.trim().length < 2} loading={busy === "org"} onPress={() => run("org", async () => {
-            const r = await api.post<{ user: User }>("/auth/become-organizer", { displayName: orgName.trim() });
-            setUser(r.user);
-            switchTo("organizer");
-          })} />
-        </Card>
-      ) : null}
 
       {langPicker}
       <Card>

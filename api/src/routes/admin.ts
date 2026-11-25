@@ -1,7 +1,7 @@
 // Platform administration (SRS 4.5, 4.12): search, suspensions, reports, activations, settings, exports.
 import { Router } from "express";
 import { z } from "zod";
-import { one, q } from "../db/pool.js";
+import { one, q, tx } from "../db/pool.js";
 import { me, requireRole } from "../lib/auth.js";
 import { audit } from "../lib/audit.js";
 import { badRequest, idParam, notFound, parse } from "../lib/http.js";
@@ -42,6 +42,43 @@ adminRouter.post("/users/:id/suspend", async (req, res) => {
   await q("UPDATE users SET suspended_at = CASE WHEN $2 THEN now() ELSE NULL END WHERE id = $1", [id, suspended]);
   await audit({ actorId: me(req).id, action: suspended ? "user.suspended" : "user.unsuspended", entityType: "user", entityId: id, description: `User #${id} ${suspended ? "suspended" : "unsuspended"}` });
   res.json({ ok: true });
+});
+
+/**
+ * Organizer role is granted only by a platform admin (there is no self-service organizer sign-up).
+ * role "organizer" creates the organizer profile; role "attendee" is allowed only while the account owns no events.
+ */
+adminRouter.post("/users/:id/role", async (req, res) => {
+  const b = parse(z.object({ role: z.enum(["organizer", "attendee"]), displayName: z.string().trim().min(2).max(100).optional() }), req.body);
+  const user = await one<{ id: number; email: string; full_name: string; role: string }>("SELECT id, email, full_name, role FROM users WHERE id = $1", [idParam(req)]);
+  if (!user) throw notFound("User not found");
+  if (user.role === "platform_admin") throw badRequest("Platform admin roles cannot be changed here");
+  if (user.role === b.role) {
+    res.json({ ok: true, role: user.role });
+    return;
+  }
+  if (b.role === "attendee") {
+    const owns = await one("SELECT 1 FROM events WHERE organizer_id = $1 LIMIT 1", [user.id]);
+    if (owns) throw badRequest("This organizer still has events. Cancel or reassign them first.", "has_events");
+  }
+  await tx(async (db) => {
+    await db.query("UPDATE users SET role = $2 WHERE id = $1", [user.id, b.role]);
+    if (b.role === "organizer") {
+      await db.query(
+        `INSERT INTO organizer_profiles (user_id, display_name, contact_email) VALUES ($1, $2, $3)
+         ON CONFLICT (user_id) DO UPDATE SET display_name = COALESCE($4, organizer_profiles.display_name)`,
+        [user.id, b.displayName ?? user.full_name, user.email, b.displayName ?? null],
+      );
+    }
+    await audit({ actorId: me(req).id, action: b.role === "organizer" ? "user.made_organizer" : "user.organizer_removed", entityType: "user", entityId: user.id, description: `${user.email} ${b.role === "organizer" ? "made an organizer" : "changed back to attendee"} by platform admin` }, db);
+  });
+  await notify(user.id, {
+    kind: "role_changed",
+    title: b.role === "organizer" ? "You can now organize events on BiletFlow" : "Your organizer access was removed",
+    body: b.role === "organizer" ? "Open the organizer dashboard from your account menu to create your first event." : "Contact support if you think this is a mistake.",
+    link: b.role === "organizer" ? "/organizer" : "/support/new",
+  });
+  res.json({ ok: true, role: b.role });
 });
 
 /** Suspending an event stops all further sales immediately (SRS 4.5, success criteria). */

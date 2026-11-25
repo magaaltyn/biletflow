@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { Router } from "express";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
-import { one, q, tx } from "../db/pool.js";
+import { one, q } from "../db/pool.js";
 import { clearSessionCookie, me, requireAuth, setSessionCookie, signSession } from "../lib/auth.js";
 import { opaqueToken, sha256 } from "../lib/codes.js";
 import { config, googleEnabled } from "../lib/config.js";
@@ -38,23 +38,17 @@ authRouter.get("/config", (_req, res) => {
 
 authRouter.post("/register", async (req, res) => {
   const body = parse(
-    z.object({ email, password, fullName: z.string().trim().min(2).max(100), organizer: z.boolean().default(false), organizerName: z.string().trim().max(100).optional() }),
+    // Everyone signs up as an attendee. Only a platform admin can make an account an organizer (POST /api/admin/users/:id/role).
+    z.object({ email, password, fullName: z.string().trim().min(2).max(100) }),
     req.body,
   );
   const exists = await one("SELECT 1 FROM users WHERE email = $1", [body.email]);
   if (exists) throw conflict("An account with this email already exists", "email_taken");
   const hash = await bcrypt.hash(body.password, 10);
-  const user = await tx(async (db) => {
-    const u = await one<{ id: number; email: string }>(
-      "INSERT INTO users (email, password_hash, full_name, role) VALUES ($1, $2, $3, $4) RETURNING id, email",
-      [body.email, hash, body.fullName, body.organizer ? "organizer" : "attendee"],
-      db,
-    );
-    if (body.organizer) {
-      await db.query("INSERT INTO organizer_profiles (user_id, display_name, contact_email) VALUES ($1, $2, $3)", [u!.id, body.organizerName || body.fullName, body.email]);
-    }
-    return u!;
-  });
+  const user = (await one<{ id: number; email: string }>(
+    "INSERT INTO users (email, password_hash, full_name, role) VALUES ($1, $2, $3, 'attendee') RETURNING id, email",
+    [body.email, hash, body.fullName],
+  ))!;
   await sendVerification(user);
   setSessionCookie(res, user.id);
   res.status(201).json({ user: await publicUser(user.id), token: signSession(user.id) });
@@ -100,21 +94,6 @@ authRouter.post("/change-password", requireAuth, async (req, res) => {
   if (u?.password_hash && !(await bcrypt.compare(body.currentPassword ?? "", u.password_hash))) throw badRequest("Current password is wrong", "bad_credentials");
   await q("UPDATE users SET password_hash = $2 WHERE id = $1", [me(req).id, await bcrypt.hash(body.newPassword, 10)]);
   res.json({ ok: true });
-});
-
-authRouter.post("/become-organizer", requireAuth, async (req, res) => {
-  const body = parse(z.object({ displayName: z.string().trim().min(2).max(100) }), req.body);
-  const user = me(req);
-  if (user.role === "platform_admin") throw badRequest("Platform admins cannot become organizers");
-  await tx(async (db) => {
-    await db.query("UPDATE users SET role = 'organizer' WHERE id = $1", [user.id]);
-    await db.query(
-      `INSERT INTO organizer_profiles (user_id, display_name, contact_email) VALUES ($1, $2, $3)
-       ON CONFLICT (user_id) DO UPDATE SET display_name = EXCLUDED.display_name`,
-      [user.id, body.displayName, user.email],
-    );
-  });
-  res.json({ user: await publicUser(user.id) });
 });
 
 authRouter.post("/verify-email", async (req, res) => {

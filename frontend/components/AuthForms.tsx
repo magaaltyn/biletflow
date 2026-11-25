@@ -83,7 +83,7 @@ export function RegisterForm() {
   const router = useRouter();
   const sp = useSearchParams();
   const next = sp.get("next") ?? "/";
-  const [f, setF] = useState({ fullName: "", email: "", password: "", organizer: sp.get("organizer") === "1", organizerName: "" });
+  const [f, setF] = useState({ fullName: "", email: "", password: "" });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<unknown>(null);
   const submit = async (e: React.FormEvent) => {
@@ -93,7 +93,7 @@ export function RegisterForm() {
     try {
       await api("/auth/register", { body: f });
       await refresh();
-      router.push(f.organizer ? "/organizer" : next);
+      router.push(next);
     } catch (x) {
       setErr(x);
     } finally {
@@ -108,11 +108,6 @@ export function RegisterForm() {
         <Field label={t("fullName")}><Input required autoComplete="name" value={f.fullName} onChange={(e) => setF({ ...f, fullName: e.target.value })} /></Field>
         <Field label={t("email")}><Input type="email" required autoComplete="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} /></Field>
         <Field label={t("password")} hint="At least 8 characters"><Input type="password" required minLength={8} autoComplete="new-password" value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} /></Field>
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={f.organizer} onChange={(e) => setF({ ...f, organizer: e.target.checked })} />
-          I want to organize events
-        </label>
-        {f.organizer && <Field label="Organizer / company name"><Input value={f.organizerName} onChange={(e) => setF({ ...f, organizerName: e.target.value })} /></Field>}
         <ErrorBox error={err} />
         <Button type="submit" className="w-full" loading={busy}>{t("signup")}</Button>
         <p className="text-xs text-muted">By signing up you accept the <Link className="underline" href="/terms">terms</Link> and <Link className="underline" href="/privacy">privacy policy</Link>. We will email you a link to confirm your address.</p>

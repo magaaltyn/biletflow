@@ -11,7 +11,6 @@ export const LANGS: { code: Lang; label: string }[] = [
 
 const dict = {
   events: { ru: "События", kk: "Іс-шаралар", en: "Events" },
-  forOrganizers: { ru: "Организаторам", kk: "Ұйымдастырушыларға", en: "For organizers" },
   howItWorks: { ru: "Как это работает", kk: "Қалай жұмыс істейді", en: "How it works" },
   pricing: { ru: "Цены", kk: "Бағалар", en: "Pricing" },
   login: { ru: "Войти", kk: "Кіру", en: "Log in" },

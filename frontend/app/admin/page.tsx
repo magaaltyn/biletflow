@@ -45,7 +45,12 @@ function SearchTab() {
             {data.users.map((u: any) => (
               <div key={u.id} className="flex items-center justify-between border-t border-line py-2 text-sm">
                 <span>{u.full_name}<span className="block text-xs text-muted">{u.email} · {u.role}</span></span>
-                <span className="flex items-center gap-2">{u.suspended_at && <Badge tone="red">suspended</Badge>}<button className="text-xs font-semibold text-red-600" onClick={() => post(`/admin/users/${u.id}/suspend`, { suspended: !u.suspended_at })}>{u.suspended_at ? "Unsuspend" : "Suspend"}</button></span>
+                <span className="flex flex-wrap items-center justify-end gap-2">
+                  {u.suspended_at && <Badge tone="red">suspended</Badge>}
+                  {u.role === "attendee" && <button className="text-xs font-semibold text-brand" onClick={() => post(`/admin/users/${u.id}/role`, { role: "organizer" })}>Make organizer</button>}
+                  {u.role === "organizer" && <button className="text-xs font-semibold text-muted" onClick={() => post(`/admin/users/${u.id}/role`, { role: "attendee" })}>Remove organizer</button>}
+                  <button className="text-xs font-semibold text-red-600" onClick={() => post(`/admin/users/${u.id}/suspend`, { suspended: !u.suspended_at })}>{u.suspended_at ? "Unsuspend" : "Suspend"}</button>
+                </span>
               </div>
             ))}
           </Card>

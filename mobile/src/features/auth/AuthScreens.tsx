@@ -1,6 +1,6 @@
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { useState, type ReactNode } from "react";
-import { Pressable, Switch, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { Button, Card, ErrorBox, Field, Notice, RowView, Screen, T } from "@/components/ui";
 import { useT } from "@/lib/i18n";
 import { useColors } from "@/lib/theme";
@@ -94,7 +94,7 @@ export function LoginScreen() {
 export function RegisterScreen() {
   const { t } = useT();
   const { register, setWorkspace } = useAuth();
-  const [form, setForm] = useState({ fullName: "", email: "", password: "", organizer: false, organizerName: "" });
+  const [form, setForm] = useState({ fullName: "", email: "", password: "" });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<unknown>(null);
   const set = (k: keyof typeof form) => (v: string | boolean) => setForm((f) => ({ ...f, [k]: v }));
@@ -105,9 +105,10 @@ export function RegisterScreen() {
     setBusy(true);
     setErr(null);
     try {
-      const u = await register({ ...form, email: form.email.trim(), organizerName: form.organizerName || undefined });
-      setWorkspace(u.role === "organizer" ? "organizer" : "attendee");
-      router.replace(u.role === "organizer" ? "/dashboard" : "/home");
+      // Everyone signs up as an attendee; a platform admin grants the organizer role.
+      await register({ ...form, email: form.email.trim() });
+      setWorkspace("attendee");
+      router.replace("/home");
     } catch (e) {
       setErr(e);
     } finally {
@@ -120,13 +121,6 @@ export function RegisterScreen() {
       <Field label={t("fullName")} value={form.fullName} onChangeText={set("fullName")} autoComplete="name" />
       <Field label={t("email")} value={form.email} onChangeText={set("email")} autoCapitalize="none" keyboardType="email-address" autoComplete="email" />
       <Field label={t("password")} value={form.password} onChangeText={set("password")} secureTextEntry hint="At least 8 characters" autoComplete="new-password" />
-      <Card>
-        <RowView style={{ justifyContent: "space-between" }}>
-          <T v="label">I want to organize events</T>
-          <Switch accessibilityLabel="I want to organize events" value={form.organizer} onValueChange={set("organizer")} />
-        </RowView>
-        {form.organizer ? <Field label="Organizer name" value={form.organizerName} onChangeText={set("organizerName")} placeholder="Steppe Events" /> : null}
-      </Card>
       <ErrorBox error={err} />
       <Button title={t("signup")} onPress={submit} loading={busy} />
       <T v="small" center>We will send a confirmation link to your email (local Mailpit inbox in development).</T>

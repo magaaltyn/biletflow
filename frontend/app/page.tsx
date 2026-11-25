@@ -5,9 +5,13 @@ import { EventSearch } from "@/components/EventSearch";
 import { Empty, ErrorBox, LinkButton, Spinner } from "@/components/ui";
 import { useApi } from "@/lib/hooks";
 import { useT } from "@/lib/i18n";
+import { useSession } from "@/lib/session";
 
 export default function Home() {
   const { t } = useT();
+  const { user } = useSession();
+  // "Create event" is only for organizers and platform admins; attendees and visitors do not see it.
+  const canCreate = user?.role === "organizer" || user?.role === "platform_admin";
   const { data, error, loading, reload } = useApi<{ items: EventCardData[] }>("/events?pageSize=8");
   return (
     <>
@@ -24,7 +28,7 @@ export default function Home() {
             <p className="mt-4 max-w-md text-lg text-muted">{t("heroText")}</p>
             <div className="mt-6 flex flex-wrap gap-3">
               <LinkButton href="/events">{t("browseEvents")}</LinkButton>
-              <LinkButton href="/organizer/events/new" variant="secondary">{t("createEvent")}</LinkButton>
+              {canCreate && <LinkButton href="/organizer/events/new" variant="secondary">{t("createEvent")}</LinkButton>}
             </div>
           </div>
           <div className="relative">
@@ -53,28 +57,6 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4">
-        <div className="grid gap-6 rounded-3xl bg-brand-soft p-8 md:grid-cols-[1.2fr_2fr] md:p-10">
-          <div>
-            <h2 className="text-2xl font-bold text-brand">Organize your event with BiletFlow</h2>
-            <p className="mt-2 text-muted">Create events, sell tickets, manage attendees and check them in — all in one place.</p>
-            <LinkButton href="/organizers" className="mt-5">Get started for free</LinkButton>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {[
-              ["Free events", "Create events and give out free QR tickets at no cost."],
-              ["Paid ticket sales", "Activate paid sales per event with a one-time fee."],
-              ["Seat maps & venue pictures", "Interactive seat selection with a view from each section."],
-              ["Analytics & promo codes", "Track sales, campaigns and check-ins in real time."],
-            ].map(([h, p]) => (
-              <div key={h} className="rounded-2xl bg-white p-4">
-                <p className="font-semibold">{h}</p>
-                <p className="mt-1 text-sm text-muted">{p}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
     </>
   );
 }

@@ -26,7 +26,7 @@ interface AuthState {
   workspace: Workspace;
   setWorkspace: (w: Workspace) => void;
   login: (email: string, password: string) => Promise<User>;
-  register: (input: { email: string; password: string; fullName: string; organizer?: boolean; organizerName?: string }) => Promise<User>;
+  register: (input: { email: string; password: string; fullName: string }) => Promise<User>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   setUser: (u: User) => void;
@@ -101,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const register = useCallback(
-    async (input: { email: string; password: string; fullName: string; organizer?: boolean; organizerName?: string }) => {
+    async (input: { email: string; password: string; fullName: string }) => {
       const r = await api.post<{ user: User; token: string }>("/auth/register", input);
       await applySession(r.token, r.user);
       return r.user;

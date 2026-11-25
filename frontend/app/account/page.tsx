@@ -15,7 +15,6 @@ export default function Account() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [pw, setPw] = useState({ currentPassword: "", newPassword: "" });
-  const [org, setOrg] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<unknown>(null);
   useEffect(() => {
@@ -78,14 +77,6 @@ export default function Account() {
         <Field label="New password" hint="At least 8 characters"><Input type="password" value={pw.newPassword} onChange={(e) => setPw({ ...pw, newPassword: e.target.value })} /></Field>
         <Button onClick={() => run(() => api("/auth/change-password", { body: pw }), "Password updated.")}>Save password</Button>
       </Card>
-      {user.role === "attendee" && (
-        <Card className="space-y-3">
-          <h2 className="font-bold">Become an organizer</h2>
-          <p className="text-sm text-muted">Create events and give out free tickets at no cost. Paid sales are activated per event.</p>
-          <Field label="Organizer / company name"><Input value={org} onChange={(e) => setOrg(e.target.value)} /></Field>
-          <Button onClick={() => run(() => api("/auth/become-organizer", { body: { displayName: org } }), "You are now an organizer. Open the organizer dashboard from the menu.")}>Become an organizer</Button>
-        </Card>
-      )}
     </div>
   );
 }
