@@ -3,7 +3,7 @@
 // sector and a "Your seats" panel. Sector shapes come from venue.layout; seats and availability come from the API.
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, kzt } from "@/lib/api";
-import { useT } from "@/lib/i18n";
+import {useT, translate} from "@/lib/i18n";
 
 export interface StadiumLayout {
   type: "stadium";
@@ -102,7 +102,7 @@ export function StadiumPicker({
   disabled?: boolean;
   children?: ReactNode;
 }) {
-  const { t } = useT();
+  const {t, tx} = useT();
   const geo = useGeometry(layout);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [sector, setSector] = useState<string | null>(null);
@@ -219,7 +219,7 @@ export function StadiumPicker({
     const prices = layout.sectors
       .filter((s) => s.side === side)
       .reduce<Record<string, number | null>>((m, s) => ({ ...m, [s.tier]: m[s.tier] ?? priceOf(s.code) }), {});
-    return { side, ...stand, prices: Object.entries(prices).filter(([, p]) => p != null).map(([tier, p]) => `${tier === "lower" ? "Lower" : "Upper"} ${kzt(p)}`).join(" · ") };
+    return { side, ...stand, prices: Object.entries(prices).filter(([, p]) => p != null).map(([tier, p]) => `${translate(tier === "lower" ? "Lower" : "Upper")} ${kzt(p)}`).join(" · ") };
   });
 
   const stageTransform = is3d ? `translateY(-6px) rotateX(${tilt}deg) rotateZ(${rotZ}deg) scale(1.12)` : "translateY(0px) rotateX(0deg) rotateZ(0deg) scale(1)";
@@ -233,24 +233,24 @@ export function StadiumPicker({
         <section className="flex flex-col gap-4 rounded-2xl border border-line bg-white p-5 shadow-sm sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-col gap-1">
-              <h2 className="text-xl font-bold">Choose a sector</h2>
-              <p className="text-sm text-muted">{is3d ? "Drag the stadium to orbit. Click a sector to open its seats." : "Click a sector to open its seats."}</p>
+              <h2 className="text-xl font-bold">{translate('Choose a sector')}</h2>
+              <p className="text-sm text-muted">{is3d ? translate("Drag the stadium to orbit. Click a sector to open its seats.") : translate("Click a sector to open its seats.")}</p>
             </div>
             <div className="flex flex-wrap items-center gap-2.5">
               {is3d && (
                 <div className="flex gap-1.5">
-                  <button type="button" aria-label="Rotate left" onClick={() => setRotZ(rotZ + 45)} className="flex size-11 items-center justify-center rounded-lg border border-line bg-white hover:bg-slate-100">
+                  <button type="button" aria-label={translate('Rotate left')} onClick={() => setRotZ(rotZ + 45)} className="flex size-11 items-center justify-center rounded-lg border border-line bg-white hover:bg-slate-100">
                     <Icon d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5" />
                   </button>
-                  <button type="button" aria-label="Rotate right" onClick={() => setRotZ(rotZ - 45)} className="flex size-11 items-center justify-center rounded-lg border border-line bg-white hover:bg-slate-100">
+                  <button type="button" aria-label={translate('Rotate right')} onClick={() => setRotZ(rotZ - 45)} className="flex size-11 items-center justify-center rounded-lg border border-line bg-white hover:bg-slate-100">
                     <Icon d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5" />
                   </button>
                   <button type="button" onClick={() => { setRotZ(-14); setTilt(54); }} className="h-11 rounded-lg border border-line bg-white px-3.5 text-sm font-medium hover:bg-slate-100">
-                    Reset view
+                    {translate("Reset view")}
                   </button>
                 </div>
               )}
-              <div role="group" aria-label="Map view" className="flex gap-1 rounded-xl border border-line p-1" style={{ background: STAGE_BG }}>
+              <div role="group" aria-label={translate('Map view')} className="flex gap-1 rounded-xl border border-line p-1" style={{ background: STAGE_BG }}>
                 {[["2D", false], ["3D", true]].map(([label, val]) => (
                   <button key={String(label)} type="button" aria-pressed={is3d === val} onClick={() => setIs3d(val as boolean)} className={`h-9 min-w-14 rounded-lg px-3.5 text-sm font-semibold transition ${toggleBtn(is3d === val)}`}>
                     {label}
@@ -363,7 +363,7 @@ export function StadiumPicker({
               </div>
               <div className="overflow-x-auto rounded-xl py-4" style={{ background: STAGE_BG }}>
                 {!openSeats ? (
-                  <p className="py-10 text-center text-sm text-slate-400">Loading seats…</p>
+                  <p className="py-10 text-center text-sm text-slate-400">{translate('Loading seats…')}</p>
                 ) : (
                   <div className="mx-auto w-max" style={{ perspective: 1100, perspectiveOrigin: "50% 100%" }}>
                     <div
@@ -407,7 +407,7 @@ export function StadiumPicker({
                         );
                       })}
                       <div className="mt-2.5 flex h-[30px] w-full items-center justify-center rounded-lg text-xs font-semibold tracking-[.12em]" style={{ background: "#17482E", color: "#CFEFD9" }}>
-                        PITCH
+                        {translate("PITCH")}
                       </div>
                     </div>
                   </div>
@@ -422,7 +422,7 @@ export function StadiumPicker({
               </div>
             </>
           ) : (
-            <p className="text-muted">Pick a sector on the map to see its seats.</p>
+            <p className="text-muted">{translate('Pick a sector on the map to see its seats.')}</p>
           )}
         </section>
       </div>
@@ -430,10 +430,10 @@ export function StadiumPicker({
       {/* ---------- Your seats + checkout ---------- */}
       <aside className="flex min-w-0 flex-[1_1_320px] flex-col gap-4 rounded-2xl border border-line bg-white p-5 shadow-sm sm:p-6 lg:sticky lg:top-20">
         <div className="flex items-baseline justify-between gap-3">
-          <h2 className="text-xl font-bold">Your seats</h2>
+          <h2 className="text-xl font-bold">{translate('Your seats')}</h2>
           <span className="text-sm text-muted">{pickedList.length} selected</span>
         </div>
-        {pickedList.length === 0 && <p className="text-sm leading-relaxed text-muted">No seats yet. Click a sector, then click free seats to add them here.</p>}
+        {pickedList.length === 0 && <p className="text-sm leading-relaxed text-muted">{translate('No seats yet. Click a sector, then click free seats to add them here.')}</p>}
         <div className="flex flex-col gap-2.5">
           {pickedList.map((p) => (
             <div key={p.id} className="flex items-center gap-3 rounded-xl border border-line bg-slate-50 p-3">
@@ -457,12 +457,12 @@ export function StadiumPicker({
         {pickedList.length > 0 && (
           <>
             <div className="flex items-baseline justify-between border-t border-line pt-3">
-              <span className="text-sm text-muted">Seats</span>
+              <span className="text-sm text-muted">{translate('Seats')}</span>
               <span className="text-2xl font-extrabold">{kzt(total)}</span>
             </div>
             {children}
             <button type="button" onClick={clearAll} className="h-11 rounded-xl border border-line text-sm font-medium hover:bg-slate-50">
-              Clear selection
+              {translate("Clear selection")}
             </button>
           </>
         )}

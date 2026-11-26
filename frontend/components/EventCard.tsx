@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { kzt } from "@/lib/api";
-import { localeOf, useT } from "@/lib/i18n";
+import { localeOf, translate, useT } from "@/lib/i18n";
 
 export interface EventCardData {
   id: number;
@@ -35,7 +35,7 @@ export function EventCard({ e }: { e: EventCardData }) {
         </div>
       </div>
       <div className="flex flex-1 flex-col p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-brand">{e.category}</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-brand">{translate(e.category)}</p>
         <h3 className="mt-1 line-clamp-2 font-bold">{e.title}</h3>
         <p className="mt-1 text-sm text-muted">
           {e.venue_name}, {e.city}

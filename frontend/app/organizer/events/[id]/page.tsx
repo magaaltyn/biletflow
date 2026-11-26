@@ -1,4 +1,5 @@
 "use client";
+import {useT, translate} from "@/lib/i18n";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -60,37 +61,37 @@ function Manage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
-      <Link href="/organizer" className="text-sm text-muted">← Dashboard</Link>
+      <Link href="/organizer" className="text-sm text-muted">{translate('← Dashboard')}</Link>
       <div className="mt-2 flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-bold">{e.title}</h1>
         <StatusBadge status={e.lifecycle} />
-        {e.paid_sales_status !== "inactive" && <span className="text-xs">paid sales <StatusBadge status={e.paid_sales_status} /></span>}
+        {e.paid_sales_status !== "inactive" && <span className="text-xs">{translate('paid sales')} <StatusBadge status={e.paid_sales_status} /></span>}
         {e.suspended_at && <StatusBadge status="suspended" />}
       </div>
       <p className="text-sm text-muted">{formatDate(e.starts_at, { dateStyle: "full", timeStyle: "short" })} · {e.venue.name}</p>
       <div className="mt-4 flex flex-wrap gap-2">
-        <a href={previewUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center rounded-lg border border-line bg-white px-4 text-sm font-semibold">{e.status === "draft" ? "Preview" : "View page"}</a>
-        {e.status === "draft" && <Button onClick={() => act("publish")}>Publish</Button>}
-        {e.status === "published" && <Button variant="secondary" onClick={() => act("unpublish")}>Unpublish</Button>}
-        <Button variant="secondary" onClick={() => act("duplicate")}>Duplicate</Button>
-        {e.status !== "cancelled" && <Button variant="danger" onClick={() => setAskCancel(true)}>Cancel event</Button>}
+        <a href={previewUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center rounded-lg border border-line bg-white px-4 text-sm font-semibold">{e.status === "draft" ? translate("Preview") : translate("View page")}</a>
+        {e.status === "draft" && <Button onClick={() => act("publish")}>{translate('Publish')}</Button>}
+        {e.status === "published" && <Button variant="secondary" onClick={() => act("unpublish")}>{translate('Unpublish')}</Button>}
+        <Button variant="secondary" onClick={() => act("duplicate")}>{translate('Duplicate')}</Button>
+        {e.status !== "cancelled" && <Button variant="danger" onClick={() => setAskCancel(true)}>{translate('Cancel event')}</Button>}
       </div>
-      {e.visibility === "private" && <p className="mt-2 text-xs text-muted">Private invite link: <span className="font-mono">{typeof window !== "undefined" ? window.location.origin : ""}{previewUrl}</span></p>}
+      {e.visibility === "private" && <p className="mt-2 text-xs text-muted">{translate('Private invite link:')} <span className="font-mono">{typeof window !== "undefined" ? window.location.origin : ""}{previewUrl}</span></p>}
       {askCancel && (
         <Card className="mt-4 space-y-2 border-red-200">
-          <p className="font-bold">Cancel this event?</p>
-          <p className="text-sm text-muted">All tickets become invalid. Free registrations are cancelled and paid orders are refunded (DEMO). Ticket holders are notified and get a cancellation calendar file.</p>
+          <p className="font-bold">{translate('Cancel this event?')}</p>
+          <p className="text-sm text-muted">{translate("All tickets become invalid. Free registrations are cancelled and paid orders are refunded (DEMO). Ticket holders are notified and get a cancellation calendar file.")}</p>
           <Field label="Reason shown to attendees"><Input value={cancelReason} onChange={(x) => setCancelReason(x.target.value)} /></Field>
-          <div className="flex gap-2"><Button variant="danger" onClick={() => { setAskCancel(false); void act("cancel", { reason: cancelReason }); }}>Cancel event</Button><Button variant="secondary" onClick={() => setAskCancel(false)}>Back</Button></div>
+          <div className="flex gap-2"><Button variant="danger" onClick={() => { setAskCancel(false); void act("cancel", { reason: cancelReason }); }}>{translate('Cancel event')}</Button><Button variant="secondary" onClick={() => setAskCancel(false)}>{translate('Back')}</Button></div>
         </Card>
       )}
       <div className="mt-4"><ErrorBox error={err} /></div>
-      {e.suspended_at && <div className="mt-4"><Notice tone="amber">This event was suspended by a platform admin; sales are stopped.</Notice></div>}
+      {e.suspended_at && <div className="mt-4"><Notice tone="amber">{translate('This event was suspended by a platform admin; sales are stopped.')}</Notice></div>}
 
       <div className="mt-6 grid gap-4 sm:grid-cols-4">
-        <Stat label="Sold" value={`${e.stats.sold} / ${e.stats.quantity}`} />
+        <Stat label={translate('Sold')} value={`${e.stats.sold} / ${e.stats.quantity}`} />
         <Stat label="Reserved now" value={e.stats.reserved} />
-        <Stat label="Checked in" value={e.stats.checked_in} />
+        <Stat label={translate('Checked in')} value={e.stats.checked_in} />
         <Stat label="Refunded / cancelled" value={`${e.stats.refunded} / ${e.stats.cancelled}`} />
       </div>
 
@@ -99,15 +100,15 @@ function Manage() {
           value={tab}
           onChange={setTab}
           items={[
-            { value: "details", label: "Details" },
-            { value: "tickets", label: "Tickets", count: e.ticketTypes.length },
-            { value: "activation", label: "Paid sales" },
-            { value: "campaigns", label: "Promo & QR" },
-            { value: "attendees", label: "Attendees" },
-            { value: "orders", label: "Orders & refunds" },
-            { value: "staff", label: "Event Admins", count: e.staff.length },
-            { value: "analytics", label: "Analytics" },
-            { value: "history", label: "History" },
+            { value: "details", label: translate("Details") },
+            { value: "tickets", label: translate("Tickets"), count: e.ticketTypes.length },
+            { value: "activation", label: translate("Paid sales") },
+            { value: "campaigns", label: translate("Promo & QR") },
+            { value: "attendees", label: translate("Attendees") },
+            { value: "orders", label: translate("Orders & refunds") },
+            { value: "staff", label: translate("Event Admins"), count: e.staff.length },
+            { value: "analytics", label: translate("Analytics") },
+            { value: "history", label: translate("History") },
           ]}
         />
         <div className="mt-5">
@@ -115,13 +116,13 @@ function Manage() {
             <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
               <Card><EventForm initial={fromEvent(e)} submitLabel="Save changes" onSubmit={async (v) => { await api(`/organizer/events/${e.id}`, { method: "PATCH", body: v }); void reload(); }} /></Card>
               <Card className="space-y-3 self-start">
-                <h3 className="font-bold">Cover image</h3>
+                <h3 className="font-bold">{translate('Cover image')}</h3>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 {e.image_url && <img src={e.image_url} alt="" className="rounded-xl" />}
                 <Input type="file" accept="image/*" onChange={(x) => x.target.files?.[0] && upload(x.target.files[0])} aria-label="Upload cover image" />
                 {e.venue.map_image_url && (
                   <>
-                    <h3 className="pt-2 font-bold">Venue map</h3>
+                    <h3 className="pt-2 font-bold">{translate('Venue map')}</h3>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={e.venue.map_image_url} alt={`Map of ${e.venue.name}`} className="rounded-xl border border-line" />
                   </>
@@ -144,5 +145,6 @@ function Manage() {
 }
 
 export default function Page() {
+  useT();
   return <Suspense fallback={<Spinner />}><Manage /></Suspense>;
 }

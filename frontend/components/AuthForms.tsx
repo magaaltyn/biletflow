@@ -3,16 +3,16 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { api } from "@/lib/api";
-import { useT } from "@/lib/i18n";
+import { useT, type Key } from "@/lib/i18n";
 import { useSession } from "@/lib/session";
 import { Button, Card, ErrorBox, Field, Input, Notice } from "./ui";
 
-const GOOGLE_ERRORS: Record<string, string> = {
-  google_state: "Google sign-in expired. Please try again.",
-  google_token: "Google did not confirm the sign-in. Please try again.",
-  google_profile: "Could not read your Google profile.",
-  google_email_unverified: "Your Google email is not verified.",
-  suspended: "This account is suspended. Contact support.",
+const GOOGLE_ERROR_KEYS: Record<string, Key> = {
+  google_state: "googleExpired",
+  google_token: "googleNotConfirmed",
+  google_profile: "googleProfileError",
+  google_email_unverified: "googleEmailUnverified",
+  suspended: "accountSuspended",
 };
 
 export function GoogleButton({ next }: { next: string }) {
@@ -30,7 +30,7 @@ export function GoogleButton({ next }: { next: string }) {
         </svg>
         {t("orGoogle")}
       </a>
-      <div className="flex items-center gap-3 text-xs text-muted"><span className="h-px flex-1 bg-line" />or<span className="h-px flex-1 bg-line" /></div>
+      <div className="flex items-center gap-3 text-xs text-muted"><span className="h-px flex-1 bg-line" />{t("or")}<span className="h-px flex-1 bg-line" /></div>
     </>
   );
 }
@@ -44,7 +44,9 @@ export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<unknown>(sp.get("error") ? GOOGLE_ERRORS[sp.get("error")!] ?? "Sign-in failed" : null);
+  const [err, setErr] = useState<unknown>(null);
+  const googleError = sp.get("error");
+  const translatedGoogleError = googleError ? t(GOOGLE_ERROR_KEYS[googleError] ?? "signInFailed") : null;
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
@@ -66,11 +68,12 @@ export function LoginForm() {
       <form onSubmit={submit} className="space-y-3">
         <Field label={t("email")}><Input type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></Field>
         <Field label={t("password")}><Input type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} /></Field>
+        {translatedGoogleError && <p role="alert" className="text-sm text-red-600">{translatedGoogleError}</p>}
         <ErrorBox error={err} />
         <Button type="submit" className="w-full" loading={busy}>{t("login")}</Button>
       </form>
       <div className="flex justify-between text-sm">
-        <Link href="/forgot-password" className="text-brand">Forgot password?</Link>
+        <Link href="/forgot-password" className="text-brand">{t("forgotPassword")}</Link>
         <Link href={`/register?next=${encodeURIComponent(next)}`} className="text-brand">{t("signup")}</Link>
       </div>
     </Card>
@@ -107,25 +110,26 @@ export function RegisterForm() {
       <form onSubmit={submit} className="space-y-3">
         <Field label={t("fullName")}><Input required autoComplete="name" value={f.fullName} onChange={(e) => setF({ ...f, fullName: e.target.value })} /></Field>
         <Field label={t("email")}><Input type="email" required autoComplete="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} /></Field>
-        <Field label={t("password")} hint="At least 8 characters"><Input type="password" required minLength={8} autoComplete="new-password" value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} /></Field>
+        <Field label={t("password")} hint={t("atLeast8")}><Input type="password" required minLength={8} autoComplete="new-password" value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} /></Field>
         <ErrorBox error={err} />
         <Button type="submit" className="w-full" loading={busy}>{t("signup")}</Button>
-        <p className="text-xs text-muted">By signing up you accept the <Link className="underline" href="/terms">terms</Link> and <Link className="underline" href="/privacy">privacy policy</Link>. We will email you a link to confirm your address.</p>
+        <p className="text-xs text-muted">{t("acceptTerms")} <Link className="underline" href="/terms">{t("terms")}</Link> {t("and")} <Link className="underline" href="/privacy">{t("privacy")}</Link>. {t("weEmailConfirm")}</p>
       </form>
-      <p className="text-sm">Already have an account? <Link href={`/login?next=${encodeURIComponent(next)}`} className="text-brand">{t("login")}</Link></p>
+      <p className="text-sm">{t("alreadyAccount")} <Link href={`/login?next=${encodeURIComponent(next)}`} className="text-brand">{t("login")}</Link></p>
     </Card>
   );
 }
 
 export function ForgotForm() {
+  const { t } = useT();
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
   return (
     <Card className="mx-auto max-w-md space-y-4">
-      <h1 className="text-2xl font-bold">Reset your password</h1>
+      <h1 className="text-2xl font-bold">{t("resetPassword")}</h1>
       {sent ? (
-        <Notice tone="green">If an account exists for {email}, we sent a reset link. It is valid for 1 hour.</Notice>
+        <Notice tone="green">{t("resetEmailSent").replace("{email}", email)}</Notice>
       ) : (
         <form
           className="space-y-3"
@@ -137,8 +141,8 @@ export function ForgotForm() {
             setBusy(false);
           }}
         >
-          <Field label="Email"><Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></Field>
-          <Button className="w-full" type="submit" loading={busy}>Send reset link</Button>
+          <Field label={t("email")}><Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></Field>
+          <Button className="w-full" type="submit" loading={busy}>{t("sendResetLink")}</Button>
         </form>
       )}
     </Card>
@@ -146,15 +150,16 @@ export function ForgotForm() {
 }
 
 export function ResetForm() {
+  const { t } = useT();
   const sp = useSearchParams();
   const [password, setPassword] = useState("");
   const [done, setDone] = useState(false);
   const [err, setErr] = useState<unknown>(null);
   return (
     <Card className="mx-auto max-w-md space-y-4">
-      <h1 className="text-2xl font-bold">Choose a new password</h1>
+      <h1 className="text-2xl font-bold">{t("chooseNewPassword")}</h1>
       {done ? (
-        <Notice tone="green">Password updated. <Link className="font-semibold underline" href="/login">Log in</Link></Notice>
+        <Notice tone="green">{t("passwordUpdated")} <Link className="font-semibold underline" href="/login">{t("login")}</Link></Notice>
       ) : (
         <form
           className="space-y-3"
@@ -168,9 +173,9 @@ export function ResetForm() {
             }
           }}
         >
-          <Field label="New password" hint="At least 8 characters"><Input type="password" minLength={8} required value={password} onChange={(e) => setPassword(e.target.value)} /></Field>
+          <Field label={t("newPassword")} hint={t("atLeast8")}><Input type="password" minLength={8} required value={password} onChange={(e) => setPassword(e.target.value)} /></Field>
           <ErrorBox error={err} />
-          <Button className="w-full" type="submit">Save password</Button>
+          <Button className="w-full" type="submit">{t("savePassword")}</Button>
         </form>
       )}
     </Card>

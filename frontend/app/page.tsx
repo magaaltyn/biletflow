@@ -4,7 +4,7 @@ import { EventCard, type EventCardData } from "@/components/EventCard";
 import { EventSearch } from "@/components/EventSearch";
 import { Empty, ErrorBox, LinkButton, Spinner } from "@/components/ui";
 import { useApi } from "@/lib/hooks";
-import { useT } from "@/lib/i18n";
+import {useT, translate} from "@/lib/i18n";
 import { useSession } from "@/lib/session";
 
 export default function Home() {
@@ -47,7 +47,7 @@ export default function Home() {
       <section className="mx-auto max-w-7xl px-4 py-12">
         <div className="mb-5 flex items-end justify-between">
           <h2 className="text-2xl font-bold">{t("popularEvents")}</h2>
-          <Link href="/events" className="text-sm font-semibold text-brand">View all →</Link>
+          <Link href="/events" className="text-sm font-semibold text-brand">{translate('View all →')}</Link>
         </div>
         {loading && <Spinner />}
         <ErrorBox error={error} onRetry={reload} />

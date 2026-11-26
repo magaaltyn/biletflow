@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { startPayment } from "@/lib/pay";
-import { useT } from "@/lib/i18n";
+import {useT, translate} from "@/lib/i18n";
 import { useSession } from "@/lib/session";
 import { Button, ErrorBox, Notice } from "./ui";
 
@@ -13,8 +13,8 @@ export function PaymentChooser({ path, amountLabel }: { path: string; amountLabe
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<unknown>(null);
   const options = [
-    { value: "demo" as const, label: "Kaspi Pay / Visa / Mastercard", note: "DEMO simulation — no real money" },
-    ...(config.halykEnabled ? [{ value: "halyk" as const, label: "Halyk ePay (bank test environment)", note: "Opens Halyk Bank's test payment page; use a test card" }] : []),
+    { value: "demo" as const, label: translate("Kaspi Pay / Visa / Mastercard"), note: translate("DEMO simulation — no real money") },
+    ...(config.halykEnabled ? [{ value: "halyk" as const, label: translate("Halyk ePay (bank test environment)"), note: translate("Opens Halyk Bank's test payment page; use a test card") }] : []),
   ];
   const go = async () => {
     setBusy(true);

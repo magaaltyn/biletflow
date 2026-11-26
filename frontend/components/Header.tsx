@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { api, formatDate } from "@/lib/api";
-import { LANGS, useT } from "@/lib/i18n";
+import { LANGS, translate, useT } from "@/lib/i18n";
 import { useSession } from "@/lib/session";
 import { ThemeToggle } from "./ThemeToggle";
 import { cx } from "./ui";
@@ -33,6 +33,7 @@ function useClickOutside(onClose: () => void) {
 
 function Bell() {
   const [open, setOpen] = useState(false);
+  const { t } = useT();
   const [data, setData] = useState<{ items: any[]; unread: number }>({ items: [], unread: 0 });
   const ref = useClickOutside(() => setOpen(false));
   const load = () => api("/notifications").then(setData).catch(() => undefined);
@@ -50,7 +51,7 @@ function Bell() {
   };
   return (
     <div className="relative" ref={ref}>
-      <button onClick={toggle} className="relative rounded-full p-2 hover:bg-slate-100" aria-label={`Notifications${data.unread ? `, ${data.unread} unread` : ""}`}>
+      <button onClick={toggle} className="relative rounded-full p-2 hover:bg-slate-100" aria-label={`${translate("Notifications")}${data.unread ? `, ${data.unread} ${translate("unread")}` : ""}`}>
         <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
           <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0" />
         </svg>
@@ -58,7 +59,7 @@ function Bell() {
       </button>
       {open && (
         <div className="absolute right-0 z-50 mt-2 max-h-96 w-80 overflow-y-auto rounded-xl border border-line bg-white p-2 shadow-xl">
-          {data.items.length === 0 && <p className="p-4 text-center text-sm text-muted">No notifications yet</p>}
+          {data.items.length === 0 && <p className="p-4 text-center text-sm text-muted">{t("noNotifications")}</p>}
           {data.items.map((n) => (
             <Link key={n.id} href={n.link ?? "#"} onClick={() => setOpen(false)} className="block rounded-lg p-3 hover:bg-slate-50">
               <p className="text-sm font-semibold">{n.title}</p>
@@ -102,7 +103,7 @@ export function Header() {
     <header className="sticky top-0 z-40 border-b border-line bg-white/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-4">
         <Logo />
-        <nav className="hidden gap-5 text-sm font-medium text-slate-600 lg:flex" aria-label="Main">
+        <nav className="hidden gap-5 text-sm font-medium text-slate-600 lg:flex" aria-label={t("mainNavigation")}>
           {nav.map((n) => (
             <Link key={n.href} href={n.href} className={cx("hover:text-ink", pathname.startsWith(n.href) && "text-brand")}>
               {n.label}
@@ -110,7 +111,7 @@ export function Header() {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-2">
-          <select aria-label="Language" value={lang} onChange={(e) => setLang(e.target.value as typeof lang)} className="rounded-md border-0 bg-transparent text-xs font-semibold text-slate-600">
+          <select aria-label={t("language")} value={lang} onChange={(e) => setLang(e.target.value as typeof lang)} className="rounded-md border-0 bg-transparent text-xs font-semibold text-slate-600">
             {LANGS.map((l) => (
               <option key={l.code} value={l.code}>
                 {l.code.toUpperCase()} · KZT
@@ -151,7 +152,7 @@ export function Header() {
               </Link>
             </>
           )}
-          <button className="rounded-md p-2 lg:hidden" onClick={() => setMobile(!mobile)} aria-label="Menu" aria-expanded={mobile}>
+          <button className="rounded-md p-2 lg:hidden" onClick={() => setMobile(!mobile)} aria-label={t("menu")} aria-expanded={mobile}>
             <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
               <path d="M4 6h16M4 12h16M4 18h16" />
             </svg>
@@ -159,7 +160,7 @@ export function Header() {
         </div>
       </div>
       {mobile && (
-        <nav className="border-t border-line bg-white px-4 py-2 lg:hidden" aria-label="Mobile">
+        <nav className="border-t border-line bg-white px-4 py-2 lg:hidden" aria-label={t("mobileNavigation")}>
           {nav.map((n) => (
             <Link key={n.href} href={n.href} className="block py-2 text-sm font-medium">
               {n.label}
@@ -177,21 +178,22 @@ export function Header() {
 }
 
 export function Footer() {
+  const { t } = useT();
   return (
     <footer className="mt-16 border-t border-line bg-white">
       <div className="mx-auto grid max-w-7xl gap-6 px-4 py-10 text-sm text-muted sm:grid-cols-3">
         <div>
           <Logo />
-          <p className="mt-3">Self-service event ticketing for Kazakhstan. Academic MVP — payments are DEMO simulations.</p>
+          <p className="mt-3">{t("footerTagline")}</p>
         </div>
         <div className="flex flex-col gap-2">
-          <Link href="/events">Events</Link>
-          <Link href="/pricing">Pricing</Link>
+          <Link href="/events">{t("events")}</Link>
+          <Link href="/pricing">{t("pricing")}</Link>
         </div>
         <div className="flex flex-col gap-2">
-          <Link href="/support">Support</Link>
-          <Link href="/terms">Terms</Link>
-          <Link href="/privacy">Privacy policy</Link>
+          <Link href="/support">{t("support")}</Link>
+          <Link href="/terms">{t("terms")}</Link>
+          <Link href="/privacy">{t("privacy")}</Link>
           <p>© {new Date().getFullYear()} BiletFlow</p>
         </div>
       </div>

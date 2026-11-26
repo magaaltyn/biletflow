@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { useT } from "@/lib/i18n";
+import {useT, translate} from "@/lib/i18n";
 import { Button, Input, Select } from "./ui";
 
 export interface Filters {
@@ -52,15 +52,15 @@ export function EventSearch({ initial = {}, compact = false }: { initial?: Filte
         <label className="mb-1 block text-xs font-semibold text-muted" htmlFor="cat">{t("category")}</label>
         <Select id="cat" value={f.category ?? ""} onChange={(e) => setF({ ...f, category: e.target.value })}>
           <option value="">{t("allCategories")}</option>
-          {opts.categories.map((c) => <option key={c}>{c}</option>)}
+          {opts.categories.map((c) => <option key={c} value={c}>{translate(c)}</option>)}
         </Select>
       </div>
       <div>
         <label className="mb-1 block text-xs font-semibold text-muted" htmlFor="when">{t("date")}</label>
         <Select id="when" value={f.when ?? ""} onChange={(e) => setF({ ...f, when: e.target.value })}>
           <option value="">{t("anyDate")}</option>
-          <option value="week">7 days</option>
-          <option value="month">30 days</option>
+          <option value="week">{translate('7 days')}</option>
+          <option value="month">{translate('30 days')}</option>
         </Select>
       </div>
       <div className="flex items-end gap-3">

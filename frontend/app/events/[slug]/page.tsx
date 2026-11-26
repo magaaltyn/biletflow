@@ -8,7 +8,7 @@ import { StadiumPicker, type StadiumLayout } from "@/components/StadiumPicker";
 import { Badge, Button, Card, ErrorBox, Field, Input, Notice, Spinner } from "@/components/ui";
 import { api, kzt } from "@/lib/api";
 import { useApi } from "@/lib/hooks";
-import { localeOf, useT } from "@/lib/i18n";
+import {localeOf, useT, translate} from "@/lib/i18n";
 import { useSession } from "@/lib/session";
 
 interface TicketType {
@@ -58,7 +58,7 @@ interface Quote {
 }
 
 function VenueGallery({ e }: { e: EventDetail }) {
-  const { t } = useT();
+  const {t, tx} = useT();
   const withViews = e.sections.filter((s) => s.view_image_url);
   const [view, setView] = useState<string | null>(null);
   const current = withViews.find((s) => s.code === view);
@@ -100,7 +100,7 @@ function EventPageInner() {
   const { slug } = useParams<{ slug: string }>();
   const sp = useSearchParams();
   const router = useRouter();
-  const { t, lang } = useT();
+  const {t, lang, tx} = useT();
   const { user } = useSession();
   const qs = new URLSearchParams();
   if (sp.get("c")) qs.set("c", sp.get("c")!);
@@ -227,7 +227,7 @@ function EventPageInner() {
                 {(appliedPromo || campaignToken) && quote?.promoError && (
                   <p className="text-sm text-red-600">
                     {quote.promoError}.{" "}
-                    <button className="font-semibold underline" onClick={() => { setPromo(""); setAppliedPromo(null); setCampaignToken(null); }}>Remove code</button>
+                    <button className="font-semibold underline" onClick={() => { setPromo(""); setAppliedPromo(null); setCampaignToken(null); }}>{translate('Remove code')}</button>
                   </p>
                 )}
                 {quote?.promo && (
@@ -259,10 +259,10 @@ function EventPageInner() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
-      {e.isPreview && <Notice tone="amber">Preview — this event is a draft and not visible to the public yet.</Notice>}
+      {e.isPreview && <Notice tone="amber">{translate('Preview — this event is a draft and not visible to the public yet.')}</Notice>}
       {e.status === "cancelled" && (
         <Notice tone="amber">
-          This event was cancelled. <a className="font-semibold underline" href={`/api/events/${e.id}/calendar.ics`}>Download the cancellation calendar file</a> to update your calendar.
+          {translate("This event was cancelled.")} <a className="font-semibold underline" href={`/api/events/${e.id}/calendar.ics`}>{translate('Download the cancellation calendar file')}</a> {translate("to update your calendar.")}
         </Notice>
       )}
       <div className="mt-4 grid gap-8 lg:grid-cols-[1.4fr_1fr]">
@@ -277,30 +277,30 @@ function EventPageInner() {
             </div>
             <div className="flex-1">
               <h1 className="text-3xl font-extrabold tracking-tight">{e.title}</h1>
-              <p className="mt-1 text-sm font-semibold text-brand">{e.category} · {e.organizer.display_name}</p>
+              <p className="mt-1 text-sm font-semibold text-brand">{translate(e.category)} · {e.organizer.display_name}</p>
             </div>
-            <Button variant="secondary" onClick={share} aria-label="Share">{copied ? "Link copied" : "Share"}</Button>
+            <Button variant="secondary" onClick={share} aria-label="Share">{copied ? translate("Link copied") : translate("Share")}</Button>
           </div>
           <Card className="space-y-2 text-sm">
             <p>📅 {fmt(e.starts_at, { dateStyle: "full", timeStyle: "short" })} – {fmt(e.ends_at, { timeStyle: "short" })} ({e.venue.timezone})</p>
             <p>📍 {e.venue.name}, {e.venue.address}</p>
             <div className="flex flex-wrap gap-2 pt-2">
               <span className="text-sm font-semibold">{t("addToCalendar")}:</span>
-              <a className="text-sm font-semibold text-brand underline" href={e.calendar.google} target="_blank" rel="noreferrer">Google</a>
-              <a className="text-sm font-semibold text-brand underline" href={e.calendar.outlook} target="_blank" rel="noreferrer">Outlook</a>
-              <a className="text-sm font-semibold text-brand underline" href={`/api/events/${e.id}/calendar.ics`}>Apple / .ics</a>
+              <a className="text-sm font-semibold text-brand underline" href={e.calendar.google} target="_blank" rel="noreferrer">{translate('Google')}</a>
+              <a className="text-sm font-semibold text-brand underline" href={e.calendar.outlook} target="_blank" rel="noreferrer">{translate('Outlook')}</a>
+              <a className="text-sm font-semibold text-brand underline" href={`/api/events/${e.id}/calendar.ics`}>{translate('Apple / .ics')}</a>
             </div>
           </Card>
           <Card>
             <h2 className="text-lg font-bold">{t("aboutEvent")}</h2>
             <p className="mt-2 whitespace-pre-line text-slate-700">{e.description}</p>
-            <p className="mt-4 text-xs text-muted">Refund policy: {e.refund_policy}</p>
+            <p className="mt-4 text-xs text-muted">{translate("Refund policy:")} {e.refund_policy}</p>
           </Card>
           <VenueGallery e={e} />
           <p className="text-sm text-muted">
             {t("getHelp")} <Link className="font-semibold text-brand" href={`/support/new?eventId=${e.id}`}>{t("support")}</Link>
             {" · "}
-            <Link className="text-muted underline" href={`/support/report?eventId=${e.id}`}>Report this event</Link>
+            <Link className="text-muted underline" href={`/support/report?eventId=${e.id}`}>{translate('Report this event')}</Link>
           </p>
         </div>
 
@@ -325,12 +325,12 @@ function EventPageInner() {
                           <p className="text-sm font-bold text-brand">{tt.price_kzt === 0 ? t("free") : kzt(tt.price_kzt)}</p>
                           {tt.description && <p className="text-xs text-muted">{tt.description}</p>}
                           {tt.price_kzt === 0 && <p className="text-xs text-muted">{t("freeLimit")}</p>}
-                          {off && <p className="text-xs text-amber-700">Paid sales not active yet</p>}
+                          {off && <p className="text-xs text-amber-700">{translate('Paid sales not active yet')}</p>}
                         </div>
                         <div className="flex items-center gap-2">
-                          <button className="size-8 rounded-lg border border-line font-bold disabled:opacity-40" disabled={q <= 0} onClick={() => setQty({ ...qty, [tt.id]: q - 1 })} aria-label={`Fewer ${tt.name}`}>−</button>
+                          <button className="size-8 rounded-lg border border-line font-bold disabled:opacity-40" disabled={q <= 0} onClick={() => setQty({ ...qty, [tt.id]: q - 1 })} aria-label={`${translate("Fewer")} ${tt.name}`}>−</button>
                           <span className="w-5 text-center font-semibold" aria-live="polite">{q}</span>
-                          <button className="size-8 rounded-lg border border-line font-bold disabled:opacity-40" disabled={off || closed || q >= max} onClick={() => setQty({ ...qty, [tt.id]: q + 1 })} aria-label={`More ${tt.name}`}>+</button>
+                          <button className="size-8 rounded-lg border border-line font-bold disabled:opacity-40" disabled={off || closed || q >= max} onClick={() => setQty({ ...qty, [tt.id]: q + 1 })} aria-label={`${translate("More")} ${tt.name}`}>+</button>
                         </div>
                       </div>
                       {tt.available === 0 && <p className="mt-1 text-xs font-semibold text-red-600">{t("soldOut")}</p>}
@@ -347,7 +347,7 @@ function EventPageInner() {
                   </div>
                 ))}
                 <p className="pt-1 text-xs text-muted">{t("chooseSeats")} ↓</p>
-                {isStadium && <a href="#seats" className="block pt-1 text-sm font-semibold text-brand">Open the stadium map ↓</a>}
+                {isStadium && <a href="#seats" className="block pt-1 text-sm font-semibold text-brand">{translate('Open the stadium map ↓')}</a>}
               </div>
             )}
 
@@ -359,7 +359,7 @@ function EventPageInner() {
 
       {e.seating === "assigned" && isStadium && e.venue.layout && (
         <section className="mt-8">
-          {paidBlocked && <div className="mb-4"><Notice tone="amber">Paid sales for this event are not active yet.</Notice></div>}
+          {paidBlocked && <div className="mb-4"><Notice tone="amber">{translate('Paid sales for this event are not active yet.')}</Notice></div>}
           {!hasSelection && <div className="mb-4"><ErrorBox error={err} /></div>}
           <StadiumPicker eventId={e.id} query={qs.toString()} layout={e.venue.layout} selected={seatIds} onChange={setSeatIds} refreshKey={seatRefresh} disabled={closed || paidBlocked}>
             {checkoutPanel}
@@ -381,9 +381,9 @@ function EventPageInner() {
                 </p>
               )}
             </div>
-            {paidBlocked && <Notice tone="amber">Paid sales for this event are not active yet.</Notice>}
+            {paidBlocked && <Notice tone="amber">{translate('Paid sales for this event are not active yet.')}</Notice>}
             {seatMap ? <SeatMap data={seatMap} selected={seatIds} onChange={setSeatIds} /> : <Spinner />}
-            <p className="mt-2 text-xs text-muted">Selected seats are held for you during checkout and released automatically if you do not finish in time.</p>
+            <p className="mt-2 text-xs text-muted">{translate('Selected seats are held for you during checkout and released automatically if you do not finish in time.')}</p>
           </Card>
         </section>
       )}

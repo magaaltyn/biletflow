@@ -3,7 +3,7 @@
 // and a list-based picker offers the same choice without the map.
 import { useMemo, useState } from "react";
 import { kzt } from "@/lib/api";
-import { useT } from "@/lib/i18n";
+import { translate, useT } from "@/lib/i18n";
 import { Button, Select } from "./ui";
 
 export interface Seat {
@@ -138,12 +138,12 @@ export function SeatMap({ data, selected, onChange, maxSeats = 6 }: { data: Seat
         ))}
         <span className="ml-auto flex gap-1">
           <Button variant="secondary" className="min-h-8 px-2 py-1 text-xs" onClick={() => setMode(mode === "map" ? "list" : "map")}>
-            {mode === "map" ? "List view" : "Map view"}
+            {translate(mode === "map" ? "List view" : "Map view")}
           </Button>
           {mode === "map" && (
             <>
-              <Button variant="secondary" className="min-h-8 px-2.5 py-1" aria-label="Zoom out" onClick={() => setZoom(Math.max(1, zoom - 0.5))}>−</Button>
-              <Button variant="secondary" className="min-h-8 px-2.5 py-1" aria-label="Zoom in" onClick={() => setZoom(Math.min(3, zoom + 0.5))}>+</Button>
+              <Button variant="secondary" className="min-h-8 px-2.5 py-1" aria-label={translate("Zoom out")} onClick={() => setZoom(Math.max(1, zoom - 0.5))}>−</Button>
+              <Button variant="secondary" className="min-h-8 px-2.5 py-1" aria-label={translate("Zoom in")} onClick={() => setZoom(Math.min(3, zoom + 0.5))}>+</Button>
             </>
           )}
         </span>
@@ -151,7 +151,7 @@ export function SeatMap({ data, selected, onChange, maxSeats = 6 }: { data: Seat
       {warn && <p className="mb-2 text-sm text-amber-700">{warn}</p>}
       {mode === "map" ? (
         <div className="overflow-auto rounded-xl border border-line bg-slate-50" style={{ maxHeight: 560 }}>
-          <svg viewBox={`0 0 ${data.width} ${data.height}`} style={{ width: `${zoom * 100}%`, minWidth: 600 }} role="group" aria-label="Seat map">
+          <svg viewBox={`0 0 ${data.width} ${data.height}`} style={{ width: `${zoom * 100}%`, minWidth: 600 }} role="group" aria-label={translate("Seat map")}>
             <rect x={data.width / 2 - 200} y={40} width={400} height={70} rx={10} style={{ fill: THEME.stage }} />
             <text x={data.width / 2} y={83} textAnchor="middle" fontSize={22} fontWeight={700} style={{ fill: THEME.label }}>STAGE · СЦЕНА</text>
             {sections.map(([code, b]) => {

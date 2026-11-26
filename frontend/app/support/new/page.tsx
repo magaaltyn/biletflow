@@ -1,4 +1,5 @@
 "use client";
+import {useT, translate} from "@/lib/i18n";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { Button, Card, ErrorBox, Field, Input, Notice, PageTitle, Select, Spinner, Textarea } from "@/components/ui";
@@ -18,6 +19,7 @@ const CATEGORIES = [
 ];
 
 function NewCase() {
+  useT();
   const { user } = useRequireUser();
   const sp = useSearchParams();
   const router = useRouter();
@@ -39,15 +41,15 @@ function NewCase() {
   };
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
-      <PageTitle title="New support case" />
-      {(ctx.eventId || ctx.orderId || ctx.ticketId) && <Notice>Your {ctx.ticketId ? "ticket" : ctx.orderId ? "order" : "event"} details are attached automatically.</Notice>}
+      <PageTitle title={translate('New support case')} />
+      {(ctx.eventId || ctx.orderId || ctx.ticketId) && <Notice>{translate(ctx.ticketId ? "Your ticket details are attached automatically." : ctx.orderId ? "Your order details are attached automatically." : "Your event details are attached automatically.")}</Notice>}
       <Card className="mt-4">
         <form onSubmit={submit} className="space-y-3">
-          <Field label="Category"><Select value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })}>{CATEGORIES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</Select></Field>
+          <Field label={translate('Category')}><Select value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })}>{CATEGORIES.map(([v, l]) => <option key={v} value={v}>{translate(l)}</option>)}</Select></Field>
           <Field label="Subject"><Input required minLength={3} value={f.subject} onChange={(e) => setF({ ...f, subject: e.target.value })} /></Field>
           <Field label="Message"><Textarea required minLength={3} value={f.message} onChange={(e) => setF({ ...f, message: e.target.value })} /></Field>
           <ErrorBox error={err} />
-          <Button type="submit" loading={busy}>Send</Button>
+          <Button type="submit" loading={busy}>{translate('Send')}</Button>
         </form>
       </Card>
     </div>
@@ -55,5 +57,6 @@ function NewCase() {
 }
 
 export default function Page() {
+  useT();
   return <Suspense fallback={<Spinner />}><NewCase /></Suspense>;
 }

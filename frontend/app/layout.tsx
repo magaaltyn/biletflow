@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Footer, Header } from "@/components/Header";
+import { SkipLink } from "@/components/SkipLink";
 import { LangProvider } from "@/lib/i18n";
 import { SessionProvider } from "@/lib/session";
 import { themeInitScript } from "@/lib/theme";
@@ -21,9 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <LangProvider>
           <SessionProvider>
-            <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-white focus:p-2">
-              Skip to content
-            </a>
+            <SkipLink />
             <Header />
             <main id="main" className="min-h-[70vh]">
               {children}

@@ -6,7 +6,7 @@ import { PaymentChooser } from "@/components/PaymentChooser";
 import { Badge, Button, Card, ErrorBox, Notice, Spinner, StatusBadge } from "@/components/ui";
 import { api, formatDate, kzt } from "@/lib/api";
 import { useApi, useRequireUser } from "@/lib/hooks";
-import { useT } from "@/lib/i18n";
+import {useT, translate} from "@/lib/i18n";
 
 function Countdown({ until, onEnd }: { until: string; onEnd: () => void }) {
   const [left, setLeft] = useState(() => new Date(until).getTime() - Date.now());
@@ -29,7 +29,7 @@ function OrderInner() {
   const { id } = useParams<{ id: string }>();
   const sp = useSearchParams();
   const router = useRouter();
-  const { t } = useT();
+  const {t, tx} = useT();
   const { user } = useRequireUser();
   const { data: o, error, loading, reload } = useApi<any>(user ? `/orders/${id}` : null);
   const [verifying, setVerifying] = useState(false);
@@ -65,16 +65,16 @@ function OrderInner() {
         <h1 className="text-2xl font-bold">{o.title}</h1>
         <StatusBadge status={o.status} />
       </div>
-      <p className="text-sm text-muted">Order {o.code} · {formatDate(o.starts_at, { dateStyle: "full", timeStyle: "short" })} · {o.venue_name}</p>
+      <p className="text-sm text-muted">{translate("Order")} {o.code} · {formatDate(o.starts_at, { dateStyle: "full", timeStyle: "short" })} · {o.venue_name}</p>
       <div className="mt-4"><ErrorBox error={err} /></div>
 
-      {o.status === "paid" && <div className="mt-4"><Notice tone="green">✓ {o.total_kzt > 0 ? "Payment successful (DEMO)." : "Registration confirmed."} Your tickets were also sent to {o.attendee_email}.</Notice></div>}
-      {o.status === "failed" && <div className="mt-4"><Notice tone="amber">The payment did not go through, so no tickets were issued and the reservation was released. You can start a new order from the event page.</Notice></div>}
-      {o.status === "expired" && <div className="mt-4"><Notice tone="amber">The reservation time ran out and the tickets were released.</Notice></div>}
+      {o.status === "paid" && <div className="mt-4"><Notice tone="green">✓ {o.total_kzt > 0 ? translate("Payment successful (DEMO).") : translate("Registration confirmed.")} {translate("Your tickets were also sent to")} {o.attendee_email}.</Notice></div>}
+      {o.status === "failed" && <div className="mt-4"><Notice tone="amber">{translate('The payment did not go through, so no tickets were issued and the reservation was released. You can start a new order from the event page.')}</Notice></div>}
+      {o.status === "expired" && <div className="mt-4"><Notice tone="amber">{translate('The reservation time ran out and the tickets were released.')}</Notice></div>}
 
       <div className="mt-6 grid gap-6 md:grid-cols-[1.3fr_1fr]">
         <Card>
-          <h2 className="font-bold">Order summary</h2>
+          <h2 className="font-bold">{translate('Order summary')}</h2>
           <ul className="mt-3 space-y-2 text-sm">
             {o.items.map((i: any) => (
               <li key={i.id} className="flex justify-between gap-2">
@@ -93,26 +93,26 @@ function OrderInner() {
             <div className="flex justify-between text-base font-bold"><dt>{t("total")}</dt><dd className="text-brand">{kzt(o.total_kzt)}</dd></div>
           </dl>
           {o.payments.length > 0 && (
-            <p className="mt-3 text-xs text-muted">Payments: {o.payments.map((p: any) => `${p.provider} ${p.status}${p.is_demo ? " (DEMO)" : ""}`).join(", ")}</p>
+            <p className="mt-3 text-xs text-muted">{translate("Payments:")} {o.payments.map((p: any) => `${p.provider} ${p.status}${p.is_demo ? " (DEMO)" : ""}`).join(", ")}</p>
           )}
         </Card>
         {o.status === "pending" ? (
           <Card>
             <p className="text-sm">{t("reservedFor")} <Countdown until={o.reserved_until} onEnd={reload} /></p>
             <div className="mt-4"><PaymentChooser path={`/orders/${o.id}/pay`} amountLabel={kzt(o.total_kzt)} /></div>
-            <Button variant="ghost" className="mt-2 w-full" onClick={cancel}>Cancel order</Button>
+            <Button variant="ghost" className="mt-2 w-full" onClick={cancel}>{translate('Cancel order')}</Button>
           </Card>
         ) : (
           <Card className="space-y-2 text-sm">
             <p className="font-bold">{t("addToCalendar")}</p>
             <div className="flex flex-wrap gap-3">
-              <a className="font-semibold text-brand underline" href={o.calendar.google} target="_blank" rel="noreferrer">Google</a>
-              <a className="font-semibold text-brand underline" href={o.calendar.outlook} target="_blank" rel="noreferrer">Outlook</a>
-              <a className="font-semibold text-brand underline" href={`/api/events/${o.event_id}/calendar.ics`}>Apple / .ics</a>
+              <a className="font-semibold text-brand underline" href={o.calendar.google} target="_blank" rel="noreferrer">{translate('Google')}</a>
+              <a className="font-semibold text-brand underline" href={o.calendar.outlook} target="_blank" rel="noreferrer">{translate('Outlook')}</a>
+              <a className="font-semibold text-brand underline" href={`/api/events/${o.event_id}/calendar.ics`}>{translate('Apple / .ics')}</a>
             </div>
             <p className="pt-2 font-bold">{t("getHelp")}</p>
             <Link className="font-semibold text-brand" href={`/support/new?orderId=${o.id}`}>{t("support")} →</Link>
-            <p className="pt-2 text-xs text-muted">Refund policy: {o.refund_policy}</p>
+            <p className="pt-2 text-xs text-muted">{translate("Refund policy:")} {o.refund_policy}</p>
           </Card>
         )}
       </div>
@@ -141,7 +141,7 @@ function OrderInner() {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={`/api/tickets/${tk.id}/qr.png`} alt={`QR code for ticket ${tk.code}`} className="mx-auto mt-3 size-48" />
                   ) : (
-                    <p className="my-6 text-center font-bold text-red-600">Not valid for entry</p>
+                    <p className="my-6 text-center font-bold text-red-600">{translate('Not valid for entry')}</p>
                   )}
                   <p className="text-center font-mono text-xs">{tk.code}</p>
                   <p className="mt-1 text-center"><StatusBadge status={tk.status} /></p>
@@ -156,7 +156,7 @@ function OrderInner() {
           </div>
         </section>
       )}
-      {o.discount_kzt > 0 && <p className="mt-4 text-xs text-muted"><Badge tone="green">{o.promo_code}</Badge> discount applied by the server.</p>}
+      {o.discount_kzt > 0 && <p className="mt-4 text-xs text-muted"><Badge tone="green">{o.promo_code}</Badge> {translate('discount applied by the server.')}</p>}
     </div>
   );
 }

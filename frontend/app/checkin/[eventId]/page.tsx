@@ -1,4 +1,5 @@
 "use client";
+import {useT, translate} from "@/lib/i18n";
 // Web check-in (SRS 4.8): camera QR scanning where the browser supports it, manual code entry and attendee search.
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -76,13 +77,14 @@ function Camera({ onCode }: { onCode: (code: string) => void }) {
   return (
     <div className="space-y-2">
       {on && <video ref={video} className="aspect-square w-full rounded-xl bg-black object-cover" muted playsInline />}
-      <Button variant={on ? "secondary" : "primary"} className="w-full" onClick={() => { setErr(null); setOn(!on); }}>{on ? "Stop camera" : "Scan with camera"}</Button>
+      <Button variant={on ? "secondary" : "primary"} className="w-full" onClick={() => { setErr(null); setOn(!on); }}>{on ? translate("Stop camera") : translate("Scan with camera")}</Button>
       {err && <p className="text-sm text-amber-700">{err}</p>}
     </div>
   );
 }
 
 export default function CheckinScreen() {
+  useT();
   const { eventId } = useParams<{ eventId: string }>();
   const { user } = useRequireUser();
   const { data: stats, setData: setStats, error } = useApi<{ registered: number; checked_in: number }>(user ? `/checkin/${eventId}/stats` : null);
@@ -134,21 +136,21 @@ export default function CheckinScreen() {
 
   return (
     <div className="mx-auto max-w-md space-y-4 px-4 py-6">
-      <Link href="/checkin" className="text-sm text-muted">← Events</Link>
+      <Link href="/checkin" className="text-sm text-muted">{translate('← Events')}</Link>
       <Card className="flex items-center justify-around text-center">
-        <div><p className="text-xs text-muted">Checked in</p><p className="text-3xl font-extrabold text-brand">{stats?.checked_in ?? "—"}</p></div>
-        <div><p className="text-xs text-muted">Registered</p><p className="text-3xl font-extrabold">{stats?.registered ?? "—"}</p></div>
+        <div><p className="text-xs text-muted">{translate('Checked in')}</p><p className="text-3xl font-extrabold text-brand">{stats?.checked_in ?? "—"}</p></div>
+        <div><p className="text-xs text-muted">{translate('Registered')}</p><p className="text-3xl font-extrabold">{stats?.registered ?? "—"}</p></div>
       </Card>
       {result && style && (
         <div className={`rounded-2xl p-5 text-on-brand ${style.bg}`} role="status" aria-live="assertive">
-          <p className="text-2xl font-extrabold">{style.title}</p>
-          {result.message && <p className="mt-1 text-sm opacity-90">{result.message}</p>}
+          <p className="text-2xl font-extrabold">{translate(style.title)}</p>
+          {result.message && <p className="mt-1 text-sm opacity-90">{translate(result.message)}</p>}
           {result.ticket && (
             <div className="mt-3 text-sm">
               <p className="text-lg font-bold">{result.ticket.attendee_name}</p>
               <p>{result.ticket.ticket_type}{result.ticket.section_code ? ` · ${result.ticket.section_code}-${result.ticket.row_label}-${result.ticket.seat_number}` : ""}</p>
               <p className="font-mono text-xs opacity-80">{result.ticket.code}</p>
-              {result.result === "valid" && <button className="mt-2 font-semibold underline" onClick={() => manual(result.ticket.id, true)}>Undo check-in</button>}
+              {result.result === "valid" && <button className="mt-2 font-semibold underline" onClick={() => manual(result.ticket.id, true)}>{translate('Undo check-in')}</button>}
             </div>
           )}
         </div>
@@ -156,14 +158,14 @@ export default function CheckinScreen() {
       <Card className="space-y-3">
         <Camera onCode={scan} />
         <form onSubmit={(e) => { e.preventDefault(); if (code.trim()) void scan(code.trim()); setCode(""); }} className="flex gap-2">
-          <Input placeholder="Or paste the QR text (BFT1.…)" value={code} onChange={(e) => setCode(e.target.value)} aria-label="QR code text" />
-          <Button type="submit">Check</Button>
+          <Input placeholder={translate("Or paste the QR text (BFT1.…)")} value={code} onChange={(e) => setCode(e.target.value)} aria-label={translate("QR code text")} />
+          <Button type="submit">{translate('Check')}</Button>
         </form>
       </Card>
       <ErrorBox error={err} />
       <Card className="space-y-2">
-        <p className="font-bold">Find attendee</p>
-        <Input placeholder="Name, email or ticket ID" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search attendees" />
+        <p className="font-bold">{translate('Find attendee')}</p>
+        <Input placeholder={translate("Name, email or ticket ID")} value={q} onChange={(e) => setQ(e.target.value)} aria-label={translate("Search attendees")} />
         <ul className="divide-y divide-line">
           {found.map((t) => (
             <li key={t.id} className="flex items-center justify-between gap-2 py-2 text-sm">
@@ -173,8 +175,8 @@ export default function CheckinScreen() {
               </div>
               <div className="flex items-center gap-2">
                 <StatusBadge status={t.status} />
-                {t.status === "valid" && <Button className="min-h-8 px-3 py-1" onClick={() => manual(t.id)}>Check in</Button>}
-                {t.status === "checked_in" && <button className="text-xs font-semibold text-brand" onClick={() => manual(t.id, true)}>Undo</button>}
+                {t.status === "valid" && <Button className="min-h-8 px-3 py-1" onClick={() => manual(t.id)}>{translate('Check in')}</Button>}
+                {t.status === "checked_in" && <button className="text-xs font-semibold text-brand" onClick={() => manual(t.id, true)}>{translate('Undo')}</button>}
               </div>
             </li>
           ))}
