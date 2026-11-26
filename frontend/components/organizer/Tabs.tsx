@@ -23,6 +23,9 @@ export function TicketTypesTab({ event, reload }: { event: any; reload: () => vo
   const seatsOf = (codes: string[]) => sections.filter((s) => codes.includes(s.code)).reduce((sum, s) => sum + s.seats, 0);
   const setSections = (codes: string[]) => setF((prev) => ({ ...prev, sectionCodes: codes, quantity: codes.length ? seatsOf(codes) : prev.quantity }));
   const groups = [...new Set(sections.map((s) => s.price_category))].map((cat) => ({ cat, items: sections.filter((s) => s.price_category === cat) }));
+  const venueCodes = new Set(sections.map((s) => s.code));
+  // On a seated event, a ticket type without any of this venue's sections puts no seats on sale.
+  const noSeats = sections.length > 0 ? event.ticketTypes.filter((t: any) => !t.section_codes.some((c: string) => venueCodes.has(c))) : [];
   const save = async () => {
     setErr(null);
     try {
@@ -38,7 +41,9 @@ export function TicketTypesTab({ event, reload }: { event: any; reload: () => vo
   };
   const edit = (t: any) => {
     setEditing(t.id);
-    setF({ name: t.name, description: t.description, priceKzt: t.price_kzt, quantity: t.quantity, maxPerOrder: t.max_per_order, salesStart: toLocalInput(t.sales_start), salesEnd: toLocalInput(t.sales_end), hidden: t.hidden, sectionCodes: t.section_codes });
+    // Drop section codes that don't exist at this venue (e.g. left over from an older form).
+    const valid = new Set(sections.map((s) => s.code));
+    setF({ name: t.name, description: t.description, priceKzt: t.price_kzt, quantity: t.quantity, maxPerOrder: t.max_per_order, salesStart: toLocalInput(t.sales_start), salesEnd: toLocalInput(t.sales_end), hidden: t.hidden, sectionCodes: t.section_codes.filter((c: string) => valid.has(c)) });
   };
   const toggleHidden = async (t: any) => {
     await api(`/organizer/ticket-types/${t.id}`, { method: "PATCH", body: { hidden: !t.hidden } }).catch(setErr);
@@ -50,6 +55,11 @@ export function TicketTypesTab({ event, reload }: { event: any; reload: () => vo
   };
   return (
     <div className="space-y-4">
+      {noSeats.length > 0 && (
+        <Notice tone="amber">
+          {translate("No seats are on sale for these ticket types because they have no sections of this venue. Click Edit and choose sections:")} <b>{noSeats.map((t: any) => t.name).join(", ")}</b>
+        </Notice>
+      )}
       <div className="overflow-x-auto rounded-2xl border border-line bg-white">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-left text-xs uppercase text-muted">
@@ -59,7 +69,7 @@ export function TicketTypesTab({ event, reload }: { event: any; reload: () => vo
             {event.ticketTypes.length === 0 && <tr><td colSpan={7} className="p-6 text-center text-muted">{translate('No ticket types yet. Add one below.')}</td></tr>}
             {event.ticketTypes.map((t: any) => (
               <tr key={t.id} className="border-t border-line">
-                <td className="p-3"><b>{t.name}</b> {t.hidden && <Badge>{translate('hidden')}</Badge>}{t.section_codes.length > 0 && <span className="block text-xs text-muted">{translate("Sections")} {t.section_codes.join(", ")}</span>}</td>
+                <td className="p-3"><b>{t.name}</b> {t.hidden && <Badge>{translate('hidden')}</Badge>}{t.section_codes.some((c: string) => venueCodes.has(c)) && <span className="block text-xs text-muted">{translate("Sections")} {t.section_codes.filter((c: string) => venueCodes.has(c)).join(", ")}</span>}</td>
                 <td className="p-3">{t.price_kzt === 0 ? translate("Free") : kzt(t.price_kzt)}</td>
                 <td className="p-3">{t.quantity - t.sold - t.reserved} / {t.quantity}</td>
                 <td className="p-3">{t.reserved}</td>

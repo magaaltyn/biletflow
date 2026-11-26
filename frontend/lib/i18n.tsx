@@ -335,6 +335,7 @@ const phraseDict: Record<string, { ru: string; kk: string }> = {
   "This venue has no seat map sections, so seats cannot be assigned.": { ru: "У этой площадки нет секторов на схеме, поэтому места назначить нельзя.", kk: "Бұл өткізу орнының схемасында секторлар жоқ, сондықтан орын тағайындау мүмкін емес." },
   "Quantity is set to the number of seats in the chosen sections.": { ru: "Количество равно числу мест в выбранных секторах.", kk: "Саны таңдалған секторлардағы орындар санына тең." },
   "seats": { ru: "мест", kk: "орын" },
+  "No seats are on sale for these ticket types because they have no sections of this venue. Click Edit and choose sections:": { ru: "Места по этим типам билетов не продаются: у них нет секторов этой площадки. Нажмите «Изменить» и выберите секторы:", kk: "Бұл билет түрлері бойынша орындар сатылмайды: оларда осы өткізу орнының секторлары жоқ. «Өңдеу» басып, секторларды таңдаңыз:" },
   "Select all": { ru: "Выбрать все", kk: "Барлығын таңдау" },
   "Clear all": { ru: "Снять все", kk: "Барлығын алып тастау" },
   "Cancel": { ru: "Отмена", kk: "Болдырмау" },

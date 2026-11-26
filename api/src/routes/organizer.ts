@@ -212,6 +212,15 @@ organizerRouter.post("/events/:id/publish", async (req, res) => {
   if (e.suspended_at) throw badRequest("This event is suspended by the platform");
   const types = await one<{ n: number }>("SELECT count(*)::int AS n FROM ticket_types WHERE event_id = $1 AND NOT hidden", [e.id]);
   if (!types?.n) throw badRequest("Add at least one ticket type before publishing");
+  if (e.seating === "assigned") {
+    const priced = await one<{ n: number }>(
+      `SELECT count(*)::int AS n FROM ticket_types t, unnest(t.section_codes) AS c
+         JOIN venue_sections vs ON vs.code = c AND vs.venue_id = $2
+        WHERE t.event_id = $1 AND NOT t.hidden`,
+      [e.id, e.venue_id],
+    );
+    if (!priced?.n) throw badRequest("Choose seat-map sections for at least one ticket type before publishing", "no_priced_sections");
+  }
   await q("UPDATE events SET status = 'published', updated_at = now() WHERE id = $1", [e.id]);
   await audit({ eventId: e.id, actorId: me(req).id, action: "event.published", entityType: "event", entityId: e.id, description: "Event published" });
   res.json({ ok: true });
