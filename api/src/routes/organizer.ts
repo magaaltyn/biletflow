@@ -161,8 +161,9 @@ organizerRouter.get("/events/:id", async (req, res) => {
   const e = await getManagedEvent(me(req), idParam(req));
   const ticketTypes = await q("SELECT * FROM ticket_types WHERE event_id = $1 ORDER BY sort_order, id", [e.id]);
   const venue = await one("SELECT * FROM venues WHERE id = $1", [e.venue_id]);
+  const sections = await venueSections(e.venue_id);
   const staff = await q("SELECT u.id, u.email, u.full_name, s.can_undo FROM staff_assignments s JOIN users u ON u.id = s.user_id WHERE s.event_id = $1 ORDER BY u.full_name", [e.id]);
-  res.json({ ...e, lifecycle: lifecycle(e), venue, ticketTypes, staff, stats: await eventStats(e.id), activation: await activationChecklist(e) });
+  res.json({ ...e, lifecycle: lifecycle(e), venue, sections, ticketTypes, staff, stats: await eventStats(e.id), activation: await activationChecklist(e) });
 });
 
 organizerRouter.patch("/events/:id", async (req, res) => {
@@ -274,9 +275,36 @@ const typeSchema = z.object({
   sectionCodes: z.array(z.string().max(10)).default([]),
 });
 
+/** Seat-map sections of a venue with their seat counts (empty for venues without a seat map). */
+async function venueSections(venueId: number) {
+  return q<{ code: string; name: string; price_category: string; seats: number }>(
+    `SELECT vs.code, vs.name, vs.price_category, count(s.id)::int AS seats
+       FROM venue_sections vs LEFT JOIN seats s ON s.section_id = vs.id
+      WHERE vs.venue_id = $1 GROUP BY vs.id
+      ORDER BY length(vs.code), vs.code`,
+    [venueId],
+  );
+}
+
+/** Section codes must exist at the event's venue and must not already be priced by another ticket type. */
+async function checkSectionCodes(event: { id: number; venue_id: number; seating: string }, codes: string[], ticketTypeId?: number) {
+  if (codes.length === 0) return;
+  if (event.seating !== "assigned") throw badRequest("Sections can only be chosen for assigned seating events", "not_assigned_seating");
+  const known = new Set((await venueSections(event.venue_id)).map((s) => s.code));
+  const unknown = codes.filter((c) => !known.has(c));
+  if (unknown.length) throw badRequest(`Unknown sections for this venue: ${unknown.join(", ")}`, "unknown_sections");
+  const taken = await q<{ code: string; name: string }>(
+    `SELECT DISTINCT c AS code, t.name FROM ticket_types t, unnest(t.section_codes) AS c
+      WHERE t.event_id = $1 AND t.id <> $2 AND c = ANY($3::text[])`,
+    [event.id, ticketTypeId ?? 0, codes],
+  );
+  if (taken.length) throw badRequest(`Already priced by another ticket type: ${taken.map((t) => `${t.code} (${t.name})`).join(", ")}`, "sections_taken");
+}
+
 organizerRouter.post("/events/:id/ticket-types", async (req, res) => {
   const e = await getManagedEvent(me(req), idParam(req));
   const b = parse(typeSchema, req.body);
+  await checkSectionCodes(e, b.sectionCodes);
   if (b.priceKzt === 0 && b.maxPerOrder > 1) b.maxPerOrder = 1; // one free ticket per account per event
   const t = await one(
     `INSERT INTO ticket_types (event_id, name, description, price_kzt, quantity, sales_start, sales_end, max_per_order, hidden, section_codes,
@@ -293,6 +321,7 @@ organizerRouter.patch("/ticket-types/:tid", async (req, res) => {
   if (!t) throw notFound("Ticket type not found");
   const e = await getManagedEvent(me(req), t.event_id);
   const b = parse(typeSchema.partial(), req.body);
+  if (b.sectionCodes !== undefined) await checkSectionCodes(e, b.sectionCodes, t.id);
   if (b.quantity !== undefined && b.quantity < t.sold + t.reserved) throw badRequest(`Quantity cannot be below ${t.sold + t.reserved} (already sold or reserved)`);
   if (b.priceKzt !== undefined && b.priceKzt !== t.price_kzt && t.sold > 0 && (b.priceKzt === 0 || t.price_kzt === 0)) throw badRequest("Cannot switch between free and paid after tickets were issued");
   const price = b.priceKzt ?? t.price_kzt;

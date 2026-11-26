@@ -11,12 +11,18 @@ import { Badge, Button, Card, Empty, ErrorBox, Field, Input, Notice, Select, Spi
 // ---------- Ticket types ----------
 export function TicketTypesTab({ event, reload }: { event: any; reload: () => void }) {
   useT();
-  const sections: string[] = event.seating === "assigned" ? ["A", "B", "C", "D", "E", "F", "G", "H"] : [];
+  const sections: { code: string; name: string; price_category: string; seats: number }[] = event.seating === "assigned" ? (event.sections ?? []) : [];
   const blank = { name: "", description: "", priceKzt: 0, quantity: 100, maxPerOrder: 10, salesStart: "", salesEnd: "", hidden: false, sectionCodes: [] as string[] };
   const [f, setF] = useState(blank);
   const [editing, setEditing] = useState<number | null>(null);
   const [err, setErr] = useState<unknown>(null);
   const iso = (s: string) => (s ? new Date(s).toISOString() : null);
+  // Sections priced by another ticket type cannot be picked again (one price per seat).
+  const takenBy = new Map<string, string>();
+  for (const t of event.ticketTypes) if (t.id !== editing) for (const c of t.section_codes) takenBy.set(c, t.name);
+  const seatsOf = (codes: string[]) => sections.filter((s) => codes.includes(s.code)).reduce((sum, s) => sum + s.seats, 0);
+  const setSections = (codes: string[]) => setF((prev) => ({ ...prev, sectionCodes: codes, quantity: codes.length ? seatsOf(codes) : prev.quantity }));
+  const groups = [...new Set(sections.map((s) => s.price_category))].map((cat) => ({ cat, items: sections.filter((s) => s.price_category === cat) }));
   const save = async () => {
     setErr(null);
     try {
@@ -80,16 +86,37 @@ export function TicketTypesTab({ event, reload }: { event: any; reload: () => vo
           <Field label="Sales end (optional)"><Input type="datetime-local" value={f.salesEnd} onChange={(e) => setF({ ...f, salesEnd: e.target.value })} /></Field>
         </div>
         <Field label={translate('Description')}><Input value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} /></Field>
+        {event.seating === "assigned" && sections.length === 0 && <Notice tone="amber">{translate("This venue has no seat map sections, so seats cannot be assigned.")}</Notice>}
         {sections.length > 0 && (
-          <fieldset>
+          <fieldset className="space-y-2">
             <legend className="mb-1 text-sm font-medium">{translate('Seat-map sections priced with this ticket type')}</legend>
-            <div className="flex flex-wrap gap-3">
-              {sections.map((s) => (
-                <label key={s} className="flex items-center gap-1 text-sm">
-                  <input type="checkbox" checked={f.sectionCodes.includes(s)} onChange={(e) => setF({ ...f, sectionCodes: e.target.checked ? [...f.sectionCodes, s] : f.sectionCodes.filter((x) => x !== s) })} /> {s}
-                </label>
-              ))}
-            </div>
+            <p className="text-xs text-muted">{translate("Quantity is set to the number of seats in the chosen sections.")} {f.sectionCodes.length > 0 && <b>{f.sectionCodes.length} · {seatsOf(f.sectionCodes)} {translate("seats")}</b>}</p>
+            {groups.map(({ cat, items }) => {
+              const free = items.filter((s) => !takenBy.has(s.code)).map((s) => s.code);
+              const allOn = free.length > 0 && free.every((c) => f.sectionCodes.includes(c));
+              return (
+                <div key={cat} className="rounded-xl border border-line p-2">
+                  <div className="mb-1 flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold uppercase text-muted">{cat}</span>
+                    {free.length > 1 && (
+                      <button type="button" className="text-xs font-semibold text-brand" onClick={() => setSections(allOn ? f.sectionCodes.filter((c) => !free.includes(c)) : [...new Set([...f.sectionCodes, ...free])])}>
+                        {allOn ? translate("Clear all") : translate("Select all")}
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-x-3 gap-y-1">
+                    {items.map((s) => {
+                      const owner = takenBy.get(s.code);
+                      return (
+                        <label key={s.code} title={owner ? `${s.name} · ${owner}` : `${s.name} · ${s.seats}`} className={`flex items-center gap-1 text-sm ${owner ? "text-muted line-through" : ""}`}>
+                          <input type="checkbox" disabled={!!owner} checked={f.sectionCodes.includes(s.code)} onChange={(e) => setSections(e.target.checked ? [...f.sectionCodes, s.code] : f.sectionCodes.filter((x) => x !== s.code))} /> {s.code}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
           </fieldset>
         )}
         {f.priceKzt > 0 && event.paid_sales_status !== "active" && <Notice tone="amber">{translate('Paid tickets can be sold only after paid sales activation (Paid sales tab).')}</Notice>}
